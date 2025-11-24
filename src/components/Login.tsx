@@ -29,9 +29,9 @@ export default function Login({onLogin}: LoginProps) {
     return (
         <div
             className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 flex items-center justify-center p-4">
-            <div className="w-full max-w-6xl h-[600px] bg-white rounded-2xl shadow-2xl overflow-hidden flex">
+            <div className="w-full max-w-6xl min-h-[600px] bg-white rounded-2xl shadow-2xl flex flex-col lg:flex-row">
                 {/* Left side - University Image */}
-                <div className="w-1/2 relative">
+                <div className="w-full lg:w-1/2 relative h-64 lg:h-auto">
                     <Image
                         src="https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800&h=600&fit=crop"
                         alt="University Campus"
@@ -48,7 +48,7 @@ export default function Login({onLogin}: LoginProps) {
                 </div>
 
                 {/* Right side - Login Form */}
-                <div className="w-1/2 p-12 flex flex-col justify-center">
+                <div className="w-full lg:w-1/2 p-6 lg:p-12 pb-16 flex flex-col justify-center overflow-y-auto">
                     <div className="max-w-sm mx-auto w-full">
                         <div className="text-center mb-8">
                             <h1 className="text-3xl font-bold text-gray-900 mb-2">Đăng Nhập</h1>
