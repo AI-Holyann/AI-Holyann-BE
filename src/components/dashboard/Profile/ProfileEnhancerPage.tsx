@@ -1,11 +1,10 @@
 'use client';
 
 import React, {useState} from 'react';
-import {useRouter, usePathname} from 'next/navigation';
 import {
     TrendingUp, Users, BookOpen, Code, AlertCircle, CheckCircle2,
     Upload, FileText, Sparkles, Target, ArrowRight, Lightbulb,
-    Award, Globe, BarChart3, MessageSquare, Eye, Shield, Home, GraduationCap, User
+    Award, Globe, BarChart3, MessageSquare, Eye, Shield
 } from 'lucide-react';
 
 // Types
@@ -36,9 +35,6 @@ interface EssayAnalysis {
 }
 
 export const ProfileEnhancerPage: React.FC = () => {
-    const router = useRouter();
-    const pathname = usePathname();
-
     // States
     const [cvFile, setCvFile] = useState<File | null>(null);
     const [cvScore, setCvScore] = useState<number | null>(null);
@@ -47,12 +43,6 @@ export const ProfileEnhancerPage: React.FC = () => {
     const [essayAnalysis, setEssayAnalysis] = useState<EssayAnalysis | null>(null);
     const [isAnalyzingEssay, setIsAnalyzingEssay] = useState(false);
 
-    // Navigation items
-    const navigationItems = [
-        {name: 'Hồ Sơ', href: '/dashboard/profile', icon: User},
-        {name: 'Trường Mục Tiêu', href: '/dashboard/profile/schools', icon: GraduationCap},
-        {name: 'Cải Thiện Hồ Sơ', href: '/dashboard/profile/improve', icon: Sparkles},
-    ];
 
     // Mock Data - Recommendations
     const recommendations: RecommendationCard[] = [
@@ -168,33 +158,6 @@ export const ProfileEnhancerPage: React.FC = () => {
         <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-                {/* NAVIGATION TABS */}
-                <div className="mb-6">
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-2">
-                        <div className="flex items-center gap-2">
-                            {navigationItems.map((item) => {
-                                const IconComponent = item.icon;
-                                const isActive = pathname === item.href;
-                                return (
-                                    <button
-                                        key={item.href}
-                                        onClick={() => router.push(item.href)}
-                                        className={`
-                                            flex items-center gap-2 px-4 py-2.5 rounded-lg font-semibold text-sm transition-all duration-200
-                                            ${isActive
-                                            ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md'
-                                            : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-                                        }
-                                        `}
-                                    >
-                                        <IconComponent size={18}/>
-                                        {item.name}
-                                    </button>
-                                );
-                            })}
-                        </div>
-                    </div>
-                </div>
 
                 {/* HEADER & GROWTH METRICS */}
                 <div className="mb-10">
