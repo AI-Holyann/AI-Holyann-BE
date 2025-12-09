@@ -79,7 +79,7 @@ export default function AuthHeader() {
                     {name: 'HỒ SƠ', href: '/dashboard/profile'},
                     {name: 'CHECKLIST', href: '/checklist'},
                     {name: 'MỤC TIÊU', href: '/dashboard/profile/schools'},
-                    {name: 'TRAO ĐỔI', href: '/chatbox'},
+                    {name: 'TRAO ĐỔI', href: '/dashboard/chat'},
                     {name: 'CÀI ĐẶT', href: '/settings'},
                 ].map((item) => (
                     <Link
