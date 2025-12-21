@@ -5,12 +5,25 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="153a232e-a8a3-4f37-aba3-e1e8c6c131e4" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/src/app/dashboard/chat/page.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/components/dashboard/Chat/ChatPage.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/copilotDiffState.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/copilotDiffState.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/dashboard/AuthHeader.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/dashboard/AuthHeader.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CHANGELOG.md" beforeDir="false" afterPath="$PROJECT_DIR$/CHANGELOG.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/QUICK_START.md" beforeDir="false" afterPath="$PROJECT_DIR$/QUICK_START.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ROLE_SYSTEM_README.md" beforeDir="false" afterPath="$PROJECT_DIR$/ROLE_SYSTEM_README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/SUMMARY.md" beforeDir="false" afterPath="$PROJECT_DIR$/SUMMARY.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/api/swot/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/api/swot/route.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/dashboard/chat/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/dashboard/chat/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/dashboard/profile/improve/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/dashboard/profile/improve/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/dashboard/swotCard/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/dashboard/swotCard/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/login/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/login/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/register/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/register/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/dashboard/Profile/ProfileEnhancerPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/dashboard/Profile/ProfileEnhancerPage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/dashboard/Profile/ProfilePage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/dashboard/Profile/ProfilePage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/dashboard/Profile/TargetSchoolsPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/dashboard/Profile/TargetSchoolsPage.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/components/layout/Footer.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/layout/Footer.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/types.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/types.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/lib/data.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/lib/data.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/service/geminiService.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/service/geminiService.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -145,7 +158,15 @@
       <workItem from="1765199265814" duration="7797000" />
       <workItem from="1765243003697" duration="4613000" />
       <workItem from="1765284373361" duration="613000" />
-      <workItem from="1765285007351" duration="3627000" />
+      <workItem from="1765285007351" duration="5853000" />
+      <workItem from="1765331205900" duration="8000" />
+      <workItem from="1765562396165" duration="1857000" />
+      <workItem from="1765616372651" duration="2070000" />
+      <workItem from="1765686810281" duration="1422000" />
+      <workItem from="1765809335344" duration="1988000" />
+      <workItem from="1765970416858" duration="5116000" />
+      <workItem from="1766040491211" duration="54000" />
+      <workItem from="1766058147413" duration="6533000" />
     </task>
     <servers />
   </component>

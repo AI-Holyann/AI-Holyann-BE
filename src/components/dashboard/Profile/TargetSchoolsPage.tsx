@@ -1,10 +1,11 @@
 'use client';
 
 import React, {useState} from 'react';
+import {useRouter, usePathname} from 'next/navigation';
 import {
     GraduationCap, MapPin, Calendar, DollarSign, FileText,
     ChevronDown, ChevronUp, Star, Award, AlertCircle, CheckCircle2,
-    Target, TrendingUp, Shield
+    Target, TrendingUp, Shield, Sparkles, User
 } from 'lucide-react';
 
 // Types
@@ -411,14 +412,52 @@ const SchoolCategorySection: React.FC<{ category: School['category'] }> = ({cate
 
 // Main Component
 export const TargetSchoolsPage: React.FC = () => {
+    const router = useRouter();
+    const pathname = usePathname();
+
     const dreamCount = SCHOOLS_DATA.filter(s => s.category === 'Dream').length;
     const matchCount = SCHOOLS_DATA.filter(s => s.category === 'Match').length;
     const safetyCount = SCHOOLS_DATA.filter(s => s.category === 'Safety').length;
     const totalCount = SCHOOLS_DATA.length;
 
+    // Navigation items
+    const navigationItems = [
+        {name: 'Hồ Sơ', href: '/dashboard/profile', icon: User},
+        {name: 'Trường Mục Tiêu', href: '/dashboard/profile/schools', icon: GraduationCap},
+        {name: 'Cải Thiện Hồ Sơ', href: '/dashboard/profile/improve', icon: Sparkles},
+    ];
+
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30">
             <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+                {/* NAVIGATION TABS */}
+                <div className="mb-6">
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-2">
+                        <div className="flex items-center gap-2">
+                            {navigationItems.map((item) => {
+                                const IconComponent = item.icon;
+                                const isActive = pathname === item.href;
+                                return (
+                                    <button
+                                        key={item.href}
+                                        onClick={() => router.push(item.href)}
+                                        className={`
+                                            flex items-center gap-2 px-4 py-2.5 rounded-lg font-semibold text-sm transition-all duration-200
+                                            ${isActive
+                                            ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md'
+                                            : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                                        }
+                                        `}
+                                    >
+                                        <IconComponent size={18}/>
+                                        {item.name}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+                </div>
 
                 {/* Page Header */}
                 <div className="mb-10">

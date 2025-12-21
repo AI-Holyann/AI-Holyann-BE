@@ -10,7 +10,7 @@ import {
 // Types
 interface RecommendationCard {
     id: string;
-    category: 'extracurricular' | 'academic' | 'skill' | 'leadership';
+    category: 'extracurricular' | 'academic' | 'skill' | 'language';
     icon: React.ElementType;
     problem: string;
     solution: string;
@@ -48,9 +48,9 @@ export const ProfileEnhancerPage: React.FC = () => {
     const recommendations: RecommendationCard[] = [
         {
             id: '1',
-            category: 'leadership',
+            category: 'extracurricular',
             icon: Users,
-            problem: 'Hồ sơ thiếu vai trò lãnh đạo',
+            problem: 'Hồ sơ thiếu vai trò lãnh đạo trong hoạt động ngoại khóa',
             solution: 'Tham gia cuộc thi Hùng biện cấp thành phố (City Debate Open 2025)',
             actionText: 'Xem chi tiết cuộc thi',
             actionUrl: '#',

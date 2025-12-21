@@ -50,7 +50,7 @@ export const generateSwotAnalysis = async (profile: StudentProfile): Promise<Swo
     - Các thành tích: ${profile.achievements.join(", ")}
 
     Hãy tạo một bản phân tích SWOT chi tiết và đưa ra lời khuyên chiến lược cụ thể bằng TIẾNG VIỆT.
-    Đồng thời đánh giá điểm số (thang 1-100) cho 5 khía cạnh: học thuật, ngoại khóa, kỹ năng mềm, ngoại ngữ, và khả năng lãnh đạo dựa trên hồ sơ này.
+    Đồng thời đánh giá điểm số (thang 1-100) cho 4 khía cạnh: học thuật, hoạt động ngoại khóa, kỹ năng mềm, và ngoại ngữ dựa trên hồ sơ này.
   `;
 
     const response = await ai.models.generateContent({
@@ -101,8 +101,7 @@ export const generateSwotAnalysis = async (profile: StudentProfile): Promise<Swo
                             academic: {type: Type.INTEGER},
                             extracurricular: {type: Type.INTEGER},
                             skills: {type: Type.INTEGER},
-                            language: {type: Type.INTEGER},
-                            leadership: {type: Type.INTEGER}
+                            language: {type: Type.INTEGER}
                         }
                     }
                 }

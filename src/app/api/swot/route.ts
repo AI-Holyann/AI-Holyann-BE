@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
     - Các thành tích: ${profile.achievements.join(", ")}
 
     Hãy tạo một bản phân tích SWOT chi tiết và đưa ra lời khuyên chiến lược cụ thể bằng TIẾNG VIỆT.
-    Đồng thời đánh giá điểm số (thang 1-100) cho 5 khía cạnh: học thuật, ngoại khóa, kỹ năng mềm, ngoại ngữ, và khả năng lãnh đạo dựa trên hồ sơ này.
+    Đồng thời đánh giá điểm số (thang 1-100) cho 4 khía cạnh: học thuật, hoạt động ngoại khóa, kỹ năng mềm, và ngoại ngữ dựa trên hồ sơ này.
   `;
 
         const response = await ai.models.generateContent({
@@ -79,11 +79,10 @@ export async function POST(request: NextRequest) {
                                 academic: {type: Type.INTEGER, description: "Điểm học thuật (1-100)"},
                                 extracurricular: {type: Type.INTEGER, description: "Điểm hoạt động ngoại khóa (1-100)"},
                                 skills: {type: Type.INTEGER, description: "Điểm kỹ năng mềm (1-100)"},
-                                language: {type: Type.INTEGER, description: "Điểm ngoại ngữ (1-100)"},
-                                leadership: {type: Type.INTEGER, description: "Điểm lãnh đạo (1-100)"}
+                                language: {type: Type.INTEGER, description: "Điểm ngoại ngữ (1-100)"}
                             },
-                            required: ["academic", "extracurricular", "skills", "language", "leadership"],
-                            description: "Điểm đánh giá cho 5 khía cạnh"
+                            required: ["academic", "extracurricular", "skills", "language"],
+                            description: "Điểm đánh giá cho 4 khía cạnh"
                         }
                     },
                     required: ["strengths", "weaknesses", "opportunities", "threats", "strategicAdvice", "scores"]

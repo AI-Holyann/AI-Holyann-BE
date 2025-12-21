@@ -225,11 +225,11 @@ If you have custom components using `useAuth()`, update to handle the new `role`
 
 ```typescript
 // Before
-const {user, login} = useAuth()
+const { user, login } = useAuth()
 login(email, name)
 
 // After
-const {user, login, hasRole} = useAuth()
+const { user, login, hasRole } = useAuth()
 login(email, name, role)
 ```
 

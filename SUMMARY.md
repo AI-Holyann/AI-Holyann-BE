@@ -105,20 +105,17 @@ npm run dev
 ### Check Role Trong Component
 
 ```typescript
-import {useAuth} from '@/contexts/AuthContext'
+import { useAuth } from '@/contexts/AuthContext'
 
 function MyComponent() {
-    const {user, hasRole} = useAuth()
-
+    const { user, hasRole } = useAuth()
+    
     return (
         <div>
-            {hasRole('admin') && <AdminButton / >
-}
-    {
-        hasRole(['mentor', 'admin']) && <MentorButton / >
-    }
-    </div>
-)
+            {hasRole('admin') && <AdminButton />}
+            {hasRole(['mentor', 'admin']) && <MentorButton />}
+        </div>
+    )
 }
 ```
 
@@ -129,9 +126,9 @@ import RoleGuard from '@/components/auth/RoleGuard'
 
 export default function ProtectedPage() {
     return (
-        <RoleGuard allowedRoles = {['mentor']} >
-            <YourComponent / >
-            </RoleGuard>
+        <RoleGuard allowedRoles={['mentor']}>
+            <YourComponent />
+        </RoleGuard>
     )
 }
 ```

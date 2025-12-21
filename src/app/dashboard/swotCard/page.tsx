@@ -47,8 +47,19 @@ export default function SwotCardPage() {
             });
 
             if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.error || 'Failed to generate analysis');
+                const errorData = await response.json();
+
+                // Check if it's a quota error
+                if (errorData.error?.code === 429 || errorData.error?.status === 'RESOURCE_EXHAUSTED') {
+                    console.warn("API quota exceeded, using mock data");
+                    // Use mock data instead
+                    setSwotData(getMockSwotData());
+                    setAnalyzed(true);
+                    alert('⚠️ API Gemini đã đạt giới hạn miễn phí. Đang sử dụng dữ liệu mẫu để demo.');
+                    return;
+                }
+
+                throw new Error(errorData.error?.message || 'Failed to generate analysis');
             }
 
             const data: SwotData = await response.json();
@@ -56,25 +67,75 @@ export default function SwotCardPage() {
             setAnalyzed(true);
         } catch (error) {
             console.error("Analysis failed", error);
-            alert(`Có lỗi xảy ra: ${error instanceof Error ? error.message : 'Vui lòng kiểm tra API Key.'}`);
+
+            // Fallback to mock data for any error
+            setSwotData(getMockSwotData());
+            setAnalyzed(true);
+            alert(`⚠️ Không thể kết nối API. Đang sử dụng dữ liệu mẫu để demo.\n\nLý do: ${error instanceof Error ? error.message : 'Lỗi không xác định'}`);
         } finally {
             setLoading(false);
         }
     };
 
+    // Mock SWOT data for demo purposes
+    const getMockSwotData = (): SwotData => ({
+        strengths: [
+            'GPA 3.8/4.0 - Năng lực học thuật vững vàng, đặc biệt xuất sắc ở các môn STEM',
+            'Thành tích Olympic Toán Quốc gia - Chứng tỏ tư duy logic và khả năng giải quyết vấn đề',
+            'Dự án AI nhận đầu tư 50 triệu đồng - Kinh nghiệm thực tế trong lĩnh vực công nghệ',
+            'IELTS 7.5 - Khả năng giao tiếp tiếng Anh tốt, đủ chuẩn du học'
+        ],
+        weaknesses: [
+            'Thiếu kinh nghiệm lãnh đạo trong các tổ chức lớn (chỉ có vai trò phó ban)',
+            'Hoạt động cộng đồng chưa đa dạng và thiếu tính liên tục',
+            'Chưa có chứng chỉ quốc tế về lập trình (AWS, Google Cloud, etc.)',
+            'Portfolio cá nhân chưa được trình bày chuyên nghiệp'
+        ],
+        opportunities: [
+            'Tham gia Hackathon quốc tế để nâng cao kỹ năng và mở rộng network',
+            'Đăng ký làm Teaching Assistant cho các lớp lập trình tại trường',
+            'Xây dựng blog công nghệ để chia sẻ kiến thức và tạo personal brand',
+            'Tham gia các chương trình mentorship của các trường Dream (MIT, Stanford)'
+        ],
+        threats: [
+            'Cạnh tranh cao từ các ứng viên quốc tế có profile mạnh hơn',
+            'Yêu cầu học bổng toàn phần có thể giảm tỷ lệ trúng tuyển',
+            'Thiếu sự nổi bật trong essay nếu không kể câu chuyện tốt',
+            'Deadline áp dụng sớm (ED/EA) yêu cầu hồ sơ hoàn thiện trong thời gian ngắn'
+        ],
+        strategicAdvice: [
+            {
+                title: 'Tăng cường Leadership Profile',
+                description: 'Trong 6 tháng tới, hãy đảm nhận vai trò Trưởng ban trong một dự án cộng đồng hoặc câu lạc bộ công nghệ. Tập trung vào impact đo đếm được (số người tham gia, kết quả đạt được).'
+            },
+            {
+                title: 'Xây dựng Spike (Điểm nổi bật)',
+                description: 'Phát triển dự án AI hiện tại thành một sản phẩm có người dùng thực. Viết case study chi tiết về quá trình phát triển, thách thức và giải pháp để làm điểm nhấn trong essay.'
+            },
+            {
+                title: 'Chiến lược chọn trường cân bằng',
+                description: 'Với profile hiện tại, phân bổ: 3 Dream schools (MIT, Stanford, CMU), 4 Match schools (UIUC, UW-Madison, Georgia Tech), 3 Safety schools. Tập trung vào các trường có chương trình CS mạnh và cơ hội học bổng.'
+            }
+        ],
+        scores: {
+            academic: 85,
+            language: 75,
+            skills: 80,
+            extracurricular: 65
+        }
+    });
+
     // Prepare chart data format
     const chartData = swotData?.scores ? [
         {subject: 'Học thuật', A: swotData.scores.academic || 0, fullMark: 100},
-        {subject: 'Ngoại ngữ', A: swotData.scores.language || 0, fullMark: 100},
-        {subject: 'Kỹ năng', A: swotData.scores.skills || 0, fullMark: 100},
-        {subject: 'Lãnh đạo', A: swotData.scores.leadership || 0, fullMark: 100},
         {subject: 'Hoạt động', A: swotData.scores.extracurricular || 0, fullMark: 100},
+        {subject: 'Kỹ năng', A: swotData.scores.skills || 0, fullMark: 100},
+        {subject: 'Ngoại ngữ', A: swotData.scores.language || 0, fullMark: 100},
     ] : [
         {subject: 'Học thuật', A: 80, fullMark: 100},
-        {subject: 'Ngoại ngữ', A: 65, fullMark: 100},
-        {subject: 'Kỹ năng', A: 70, fullMark: 100},
-        {subject: 'Lãnh đạo', A: 50, fullMark: 100},
         {subject: 'Hoạt động', A: 60, fullMark: 100},
+        {subject: 'Kỹ năng', A: 70, fullMark: 100},
+        {subject: 'Ngoại ngữ', A: 65, fullMark: 100},
     ];
 
     return (

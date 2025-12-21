@@ -68,15 +68,15 @@ const handleLogin = (email: string, name: string, role: UserRole) => {
 
 ```typescript
 // Trong component
-import {useAuth} from '@/contexts/AuthContext'
+import { useAuth } from '@/contexts/AuthContext'
 
 function MyComponent() {
-    const {user, hasRole} = useAuth()
-
+    const { user, hasRole } = useAuth()
+    
     if (hasRole('admin')) {
         // Admin only code
     }
-
+    
     if (hasRole(['mentor', 'admin'])) {
         // Mentor and Admin code
     }
@@ -90,9 +90,9 @@ import RoleGuard from '@/components/auth/RoleGuard'
 
 export default function ProtectedPage() {
     return (
-        <RoleGuard allowedRoles = {['admin']} >
-            <YourComponent / >
-            </RoleGuard>
+        <RoleGuard allowedRoles={['admin']}>
+            <YourComponent />
+        </RoleGuard>
     )
 }
 ```

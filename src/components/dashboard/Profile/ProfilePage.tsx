@@ -1,11 +1,11 @@
 'use client';
 
 import React, {useRef, useState} from 'react';
-import {useRouter} from 'next/navigation';
+import {useRouter, usePathname} from 'next/navigation';
 import {
     Mail, Phone, MapPin, Calendar,
     Award, BookOpen, GraduationCap, Globe,
-    Edit3, FileText, Target, CheckCircle2, AlertCircle, UploadCloud, Trash2, File
+    Edit3, FileText, Target, CheckCircle2, AlertCircle, UploadCloud, Trash2, File, Sparkles, User
 } from 'lucide-react';
 import {StudentProfile, DocumentType} from '../../types';
 import {ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar} from 'recharts';
@@ -36,8 +36,16 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                                                             onDeleteDocument
                                                         }) => {
     const router = useRouter();
+    const pathname = usePathname();
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [selectedDocType, setSelectedDocType] = useState<DocumentType>('transcript');
+
+    // Navigation items
+    const navigationItems = [
+        {name: 'Hồ Sơ', href: '/dashboard/profile', icon: User},
+        {name: 'Trường Mục Tiêu', href: '/dashboard/profile/schools', icon: GraduationCap},
+        {name: 'Cải Thiện Hồ Sơ', href: '/dashboard/profile/improve', icon: Sparkles},
+    ];
 
     // Chart data
     const chartData = [
@@ -94,6 +102,34 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                 className="hidden"
                 onChange={handleFileChange}
             />
+
+            {/* NAVIGATION TABS */}
+            <div className="mb-6">
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-2">
+                    <div className="flex items-center gap-2">
+                        {navigationItems.map((item) => {
+                            const IconComponent = item.icon;
+                            const isActive = pathname === item.href;
+                            return (
+                                <button
+                                    key={item.href}
+                                    onClick={() => router.push(item.href)}
+                                    className={`
+                                        flex items-center gap-2 px-4 py-2.5 rounded-lg font-semibold text-sm transition-all duration-200
+                                        ${isActive
+                                        ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md'
+                                        : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                                    }
+                                    `}
+                                >
+                                    <IconComponent size={18}/>
+                                    {item.name}
+                                </button>
+                            );
+                        })}
+                    </div>
+                </div>
+            </div>
 
             {/* HEADER WITH MAIN ACTIONS */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
@@ -314,6 +350,13 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                                 TÀI LIỆU ĐÍNH KÈM
                             </h3>
                             <div className="flex items-center gap-3">
+                                <button
+                                    onClick={() => router.push('/dashboard/profile/schools')}
+                                    className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-cyan-600 text-white rounded-lg text-sm font-semibold hover:from-blue-600 hover:to-cyan-700 transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                                >
+                                    <GraduationCap size={16}/>
+                                    Trường mục tiêu
+                                </button>
                                 <button
                                     onClick={() => router.push('/dashboard/profile/improve')}
                                     className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg text-sm font-semibold hover:from-green-600 hover:to-emerald-700 transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5"

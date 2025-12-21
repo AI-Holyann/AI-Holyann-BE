@@ -57,7 +57,6 @@ export interface SwotData {
         extracurricular: number;
         skills: number;
         language: number;
-        leadership: number;
     }
 }
 

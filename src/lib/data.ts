@@ -10,18 +10,18 @@ export const BRAND_COLORS = {
 };
 
 export const NAV_LINKS = [
-    {name: "GIỚI THIỆU", href: "#gioi-thieu"},
-    {name: "ĐIỂM NỔI BẬT", href: "#diem-noi-bat"},
-    {name: "THÀNH TÍCH", href: "#thanh-tich"},
-    {name: "DỊCH VỤ", href: "#dich-vu"},
-    {name: "TRẢI NGHIỆM", href: "#trai-nghiem"},
+    {name: "Giới Thiệu", href: "#gioi-thieu"},
+    {name: "Điểm Nổi Bật", href: "#diem-noi-bat"},
+    {name: "Thành Tích", href: "#thanh-tich"},
+    {name: "Dịch Vụ", href: "#dich-vu"},
+    {name: "Trải Nghiệm", href: "#trai-nghiem"},
 ];
 
 export const CORE_VALUES = [
     {
         icon: Users,
         title: "Nhân - Con Người",
-        desc: "Tôn trọng sự khác biệt, nuôi dưỡng sự bản lĩnh và đồng hành để mỗi cá nhân phát triển thành phiên bản sâu sắc nhất.",
+        desc: "Tôn trọng sự khác biệt, nuôi dưỡng sự bản lĩnh, chính trực và đồng hành để mỗi cá nhân phát triển thành phiên bản sâu sắc nhất.",
     },
     {
         icon: ShieldCheck,

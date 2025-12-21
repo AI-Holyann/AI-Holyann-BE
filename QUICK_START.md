@@ -138,35 +138,24 @@ Truy cập route không được phép → RoleGuard → Redirect về dashboard
 ### Sử dụng Role Check trong Component
 
 ```typescript
-import {useAuth} from '@/contexts/AuthContext'
+import { useAuth } from '@/contexts/AuthContext'
 
 function MyComponent() {
-    const {user, hasRole} = useAuth()
-
+    const { user, hasRole } = useAuth()
+    
     return (
         <div>
-            <h1>Hello
-    {
-        user?.name
-    }
-    </h1>
-
-    {
-        hasRole('admin') && (
-            <button>Admin
-        Only
-        Button < /button>
+            <h1>Hello {user?.name}</h1>
+            
+            {hasRole('admin') && (
+                <button>Admin Only Button</button>
+            )}
+            
+            {hasRole(['mentor', 'admin']) && (
+                <button>Mentor & Admin Button</button>
+            )}
+        </div>
     )
-    }
-
-    {
-        hasRole(['mentor', 'admin']) && (
-            <button>Mentor & Admin
-        Button < /button>
-    )
-    }
-    </div>
-)
 }
 ```
 
@@ -177,12 +166,10 @@ import RoleGuard from '@/components/auth/RoleGuard'
 
 export default function MentorOnlyPage() {
     return (
-        <RoleGuard allowedRoles = {['mentor', 'admin'
-]
-}>
-    <YourComponent / >
-    </RoleGuard>
-)
+        <RoleGuard allowedRoles={['mentor', 'admin']}>
+            <YourComponent />
+        </RoleGuard>
+    )
 }
 ```
 
