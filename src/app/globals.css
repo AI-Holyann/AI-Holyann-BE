@@ -1,5 +1,5 @@
 /* 1. IMPORT FONTS (LUÔN Ở ĐẦU TIÊN) */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@500;600;700;800&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@500;600;700;800&display=swap");
 
 /* 2. TAILWIND IMPORTS */
 @import "tailwindcss";
@@ -8,205 +8,211 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-    --color-background: var(--background);
-    --color-foreground: var(--foreground);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
 
-    /* Cập nhật Font theo Brand */
-    --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-    --font-heading: "Montserrat", ui-sans-serif, system-ui, sans-serif;
-    /* Provide a safe fallback mono font stack to avoid unresolved custom property */
-    --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, 'Roboto Mono', 'Courier New', monospace;
+  /* Cập nhật Font theo Brand */
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-heading: "Montserrat", ui-sans-serif, system-ui, sans-serif;
+  /* Provide a safe fallback mono font stack to avoid unresolved custom property */
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono",
+    "Courier New", monospace;
 
-    /* Mapping các biến màu */
-    --color-primary: var(--primary);
-    --color-primary-foreground: var(--primary-foreground);
-    --color-secondary: var(--secondary);
-    --color-secondary-foreground: var(--secondary-foreground);
-    --color-accent: var(--accent);
-    --color-accent-foreground: var(--accent-foreground);
-    --color-muted: var(--muted);
-    --color-muted-foreground: var(--muted-foreground);
-    --color-card: var(--card);
-    --color-card-foreground: var(--card-foreground);
-    --color-popover: var(--popover);
-    --color-popover-foreground: var(--popover-foreground);
-    --color-border: var(--border);
-    --color-input: var(--input);
-    --color-ring: var(--ring);
-    --color-destructive: var(--destructive);
+  /* Mapping các biến màu */
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-destructive: var(--destructive);
 
-    --radius-sm: calc(var(--radius) - 4px);
-    --radius-md: calc(var(--radius) - 2px);
-    --radius-lg: var(--radius);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
 }
 
 /* 3. ROOT VARIABLES - LIGHT MODE (Giao diện Sáng) */
 :root {
-    --radius: 0.625rem;
+  --radius: 0.625rem;
 
-    /* Nền trắng tinh khiết */
-    --background: #FFFFFF;
-    /* Chữ màu đen ánh xanh (Dark Text) */
-    --foreground: #0F172A;
+  /* Nền trắng tinh khiết */
+  --background: #ffffff;
+  /* Chữ màu đen ánh xanh (Dark Text) */
+  --foreground: #0f172a;
 
-    /* Card: Nền trắng */
-    --card: #FFFFFF;
-    --card-foreground: #0F172A;
-    --popover: #FFFFFF;
-    --popover-foreground: #0F172A;
+  /* Card: Nền trắng */
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+  --popover: #ffffff;
+  --popover-foreground: #0f172a;
 
-    /* PRIMARY: Xanh Holyann Đậm (#0F4C81) - Dùng cho nút chính, tiêu đề */
-    --primary: #0F4C81;
-    --primary-foreground: #FFFFFF;
+  /* PRIMARY: Xanh Holyann Đậm (#0F4C81) - Dùng cho nút chính, tiêu đề */
+  --primary: #0f4c81;
+  --primary-foreground: #ffffff;
 
-    /* SECONDARY: Xanh Cyan/Sky (#00B4DB) - Dùng cho Gradient, Icon */
-    --secondary: #00B4DB;
-    --secondary-foreground: #FFFFFF;
+  /* SECONDARY: Xanh Cyan/Sky (#00B4DB) - Dùng cho Gradient, Icon */
+  --secondary: #00b4db;
+  --secondary-foreground: #ffffff;
 
-    /* BRAND helper colors discovered in codebase */
-    --brand-cyan: #00c6ff; /* used in gradients and accents */
-    --brand-blue: #0072ff; /* brighter blue used for accents */
-    --accent-alt: #f59e0b; /* used in data.ts as accent */
-    --brand-deep: #0f6093; /* darker blue used in dashboard/profile */
-    --brand-deep-darker: #0a4b75; /* hover/darker */
-    --brand-gradient2: #2b8cc9; /* secondary gradient stop */
-    --tick-gray-500: #6b7280; /* alternate tick color */
+  /* BRAND helper colors discovered in codebase */
+  --brand-cyan: #00c6ff; /* used in gradients and accents */
+  --brand-blue: #0072ff; /* brighter blue used for accents */
+  --accent-alt: #f59e0b; /* used in data.ts as accent */
+  --brand-deep: #0f6093; /* darker blue used in dashboard/profile */
+  --brand-deep-darker: #0a4b75; /* hover/darker */
+  --brand-gradient2: #2b8cc9; /* secondary gradient stop */
+  --tick-gray-500: #6b7280; /* alternate tick color */
 
-    /* ACCENT: Màu Cam Vàng (#F5A623) - Dùng cho nút CTA quan trọng */
-    --accent: #F5A623;
-    --accent-foreground: #FFFFFF;
+  /* ACCENT: Màu Cam Vàng (#F5A623) - Dùng cho nút CTA quan trọng */
+  --accent: #f5a623;
+  --accent-foreground: #ffffff;
 
-    /* Extra UI colors */
-    --grit-perseverance: #8b5cf6; /* purple */
-    --grit-consistency: #ec4899; /* pink */
-    --grit-strong: #9333ea; /* purple darker */
-    --muted-light: #e5e7eb; /* gray for lighter fills */
-    --tick-gray: #4b5563; /* axis/tick text */
-    --stroke-blue: #2563eb; /* chart stroke */
-    --tw-blue-500: #3b82f6; /* tailwind blue-500 used in charts */
+  /* Extra UI colors */
+  --grit-perseverance: #8b5cf6; /* purple */
+  --grit-consistency: #ec4899; /* pink */
+  --grit-strong: #9333ea; /* purple darker */
+  --muted-light: #e5e7eb; /* gray for lighter fills */
+  --tick-gray: #4b5563; /* axis/tick text */
+  --stroke-blue: #2563eb; /* chart stroke */
+  --tw-blue-500: #3b82f6; /* tailwind blue-500 used in charts */
 
-    /* Footer background (matches used hex) */
-    --footer-bg: #0f172a;
-    --instagram: #E1306C;
+  /* Footer background (matches used hex) */
+  --footer-bg: #0f172a;
+  --instagram: #e1306c;
 
-    /* Google / Facebook brand colors used in social buttons */
-    --google-blue: #4285F4;
-    --google-green: #34A853;
-    --google-yellow: #FBBC05;
-    --google-red: #EA4335;
-    --facebook-blue: #1877F2;
+  /* Google / Facebook brand colors used in social buttons */
+  --google-blue: #4285f4;
+  --google-green: #34a853;
+  --google-yellow: #fbbc05;
+  --google-red: #ea4335;
+  --facebook-blue: #1877f2;
 
-    /* MUTED: Xám xanh nhạt (#F1F5F9) - Dùng cho nền phụ */
-    --muted: #F1F5F9;
-    --muted-foreground: #64748B; /* Slate-500 */
+  /* MUTED: Xám xanh nhạt (#F1F5F9) - Dùng cho nền phụ */
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b; /* Slate-500 */
 
-    --destructive: #EF4444;
+  --destructive: #ef4444;
 
-    /* Border: Xám nhạt */
-    --border: #E2E8F0;
-    --input: #E2E8F0;
-    --ring: #0F4C81; /* Ring focus theo màu brand */
+  /* Border: Xám nhạt */
+  --border: #e2e8f0;
+  --input: #e2e8f0;
+  --ring: #0f4c81; /* Ring focus theo màu brand */
 }
 
 /* 4. DARK MODE CONFIG (Giao diện Tối - Deep Ocean Theme) */
 .dark {
-    /* Nền: Xanh than chì rất đậm (Không dùng đen tuyền #000) -> Tạo cảm giác cao cấp */
-    --background: #020617; /* Slate-950 */
-    /* Chữ: Trắng ngà (Không dùng trắng tinh gây chói) */
-    --foreground: #F8FAFC; /* Slate-50 */
+  /* Nền: Xanh than chì rất đậm (Không dùng đen tuyền #000) -> Tạo cảm giác cao cấp */
+  --background: #020617; /* Slate-950 */
+  /* Chữ: Trắng ngà (Không dùng trắng tinh gây chói) */
+  --foreground: #f8fafc; /* Slate-50 */
 
-    /* Card: Xanh than chì nhạt hơn nền một chút để nổi khối */
-    --card: #0F172A; /* Slate-900 */
-    --card-foreground: #F8FAFC;
-    --popover: #0F172A;
-    --popover-foreground: #F8FAFC;
+  /* Card: Xanh than chì nhạt hơn nền một chút để nổi khối */
+  --card: #0f172a; /* Slate-900 */
+  --card-foreground: #f8fafc;
+  --popover: #0f172a;
+  --popover-foreground: #f8fafc;
 
-    /* PRIMARY ĐẢO NGƯỢC:
+  /* PRIMARY ĐẢO NGƯỢC:
        Trong nền tối, màu xanh đậm (#0F4C81) sẽ bị chìm.
        Ta đổi Primary thành màu Xanh Sáng (#38BDF8 hoặc #00B4DB) để nổi bật.
     */
-    --primary: #0EA5E9; /* Sky-500: Sáng hơn, dễ đọc trên nền tối */
-    --primary-foreground: #FFFFFF;
+  --primary: #0ea5e9; /* Sky-500: Sáng hơn, dễ đọc trên nền tối */
+  --primary-foreground: #ffffff;
 
-    /* SECONDARY: Lúc này màu Xanh Đậm (#0F4C81) đóng vai trò nền phụ hoặc viền */
-    --secondary: #1E293B; /* Slate-800 */
-    --secondary-foreground: #F8FAFC;
+  /* SECONDARY: Lúc này màu Xanh Đậm (#0F4C81) đóng vai trò nền phụ hoặc viền */
+  --secondary: #1e293b; /* Slate-800 */
+  --secondary-foreground: #f8fafc;
 
-    /* ACCENT: Màu Cam giữ nguyên vì tương phản tốt trên nền tối */
-    --accent: #F5A623;
-    --accent-foreground: #FFFFFF;
+  /* ACCENT: Màu Cam giữ nguyên vì tương phản tốt trên nền tối */
+  --accent: #f5a623;
+  --accent-foreground: #ffffff;
 
-    /* MUTED: Màu nền cho các khối phụ */
-    --muted: #1E293B; /* Slate-800 */
-    --muted-foreground: #94A3B8; /* Slate-400 */
+  /* MUTED: Màu nền cho các khối phụ */
+  --muted: #1e293b; /* Slate-800 */
+  --muted-foreground: #94a3b8; /* Slate-400 */
 
-    --destructive: #7f1d1d;
-    --border: #1E293B; /* Viền tối */
-    --input: #1E293B;
-    --ring: #0EA5E9; /* Ring sáng theo màu Primary mới */
+  --destructive: #7f1d1d;
+  --border: #1e293b; /* Viền tối */
+  --input: #1e293b;
+  --ring: #0ea5e9; /* Ring sáng theo màu Primary mới */
 }
 
 @layer base {
-    * {
-        @apply border-border outline-ring/50;
-    }
+  * {
+    @apply border-border outline-ring/50;
+  }
 
-    body {
-        @apply bg-background text-foreground font-sans transition-colors duration-300;
-    }
+  body {
+    @apply bg-background text-foreground font-sans transition-colors duration-300;
+  }
 
-    /* Áp dụng font heading cho các thẻ H */
-    h1, h2, h3, h4, h5, h6 {
-        @apply font-heading font-bold;
-        /* Ở Light mode là màu xanh đậm, Dark mode tự động chuyển theo biến --foreground hoặc --primary */
-        @apply text-primary dark:text-foreground;
-    }
+  /* Áp dụng font heading cho các thẻ H */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-heading font-bold;
+    /* Ở Light mode là màu xanh đậm, Dark mode tự động chuyển theo biến --foreground hoặc --primary */
+    @apply text-primary dark:text-foreground;
+  }
 }
 
 @layer components {
-    /* Gradient Text thương hiệu */
-    .text-gradient {
-        @apply bg-gradient-to-r from-[var(--primary)] to-[var(--brand-cyan)] bg-clip-text text-transparent dark:from-[#38BDF8] dark:to-[var(--secondary)];
-    }
+  /* Gradient Text thương hiệu */
+  .text-gradient {
+    @apply bg-gradient-to-r from-[var(--primary)] to-[var(--brand-cyan)] bg-clip-text text-transparent dark:from-[#38BDF8] dark:to-[var(--secondary)];
+  }
 
-    /* Nút bấm Gradient */
-    .btn-holyann {
-        @apply bg-gradient-to-r from-[var(--primary)] to-[var(--brand-cyan)] text-white font-heading font-semibold
+  /* Nút bấm Gradient */
+  .btn-holyann {
+    @apply bg-gradient-to-r from-[var(--primary)] to-[var(--brand-cyan)] text-white font-heading font-semibold
         hover:opacity-90 transition-all duration-300 shadow-md hover:translate-y-[-2px] rounded-lg px-6 py-2
         dark:from-[var(--primary)] dark:to-[var(--secondary)];
-        /* Gradient sáng hơn trong dark mode */
-    }
+    /* Gradient sáng hơn trong dark mode */
+  }
 
-    /* Tiêu đề Section */
-    .section-title {
-        @apply font-heading text-3xl font-bold text-center uppercase tracking-wide text-primary dark:text-white relative mb-8;
-    }
+  /* Tiêu đề Section */
+  .section-title {
+    @apply font-heading text-3xl font-bold text-center uppercase tracking-wide text-primary dark:text-white relative mb-8;
+  }
 
-    .section-title::after {
-        content: '';
-        @apply block w-16 h-1 bg-[var(--secondary)] dark:bg-[var(--accent)] mx-auto mt-2 rounded-full;
-    }
+  .section-title::after {
+    content: "";
+    @apply block w-16 h-1 bg-[var(--secondary)] dark:bg-[var(--accent)] mx-auto mt-2 rounded-full;
+  }
 
-    /* Card Style */
-    .card-holyann {
-        @apply bg-card rounded-2xl shadow-sm border border-border p-6 hover:shadow-md transition-all duration-300;
-    }
+  /* Card Style */
+  .card-holyann {
+    @apply bg-card rounded-2xl shadow-sm border border-border p-6 hover:shadow-md transition-all duration-300;
+  }
 }
 
 /* Material Symbols */
 .material-symbols-outlined {
-    font-family: 'Material Symbols Outlined';
-    font-weight: normal;
-    font-style: normal;
-    font-size: 24px;
-    line-height: 1;
-    letter-spacing: normal;
-    text-transform: none;
-    display: inline-block;
-    white-space: nowrap;
-    word-wrap: normal;
-    direction: ltr;
-    -webkit-font-feature-settings: 'liga';
-    -webkit-font-smoothing: antialiased;
-    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  font-family: "Material Symbols Outlined";
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-feature-settings: "liga";
+  -webkit-font-smoothing: antialiased;
+  font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
 }

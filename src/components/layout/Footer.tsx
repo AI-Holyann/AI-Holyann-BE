@@ -85,7 +85,7 @@ export default function Footer() {
                 {/* Cột 3: Đăng ký nhận tin (CTA) */}
                 <div>
                     <h4 className="text-white font-bold mb-6 uppercase tracking-wider text-sm border-b border-slate-700 pb-2 inline-block">
-                        Nhận Tư Vấn Ngay
+                        Nhận tin tức mới nhất về du học
                     </h4>
                     <p className="text-xs mb-4 opacity-70">
                         Để lại email để nhận tài liệu hướng dẫn săn học bổng và lộ trình du học miễn phí từ Holyann.
