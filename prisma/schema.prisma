@@ -1,18 +1,25 @@
 datasource db {
   provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  url       = env("DATABASE_URL") // Kết nối qua PgBouncer (Port 6543)
+  directUrl = env("DIRECT_URL") // Kết nối trực tiếp (Port 5432) cho lệnh migrate/studio [cite: 1, 59]
 }
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
 }
 
-// 1. Định nghĩa Enum cho Role
+// 1. Định nghĩa Enum
 enum UserRole {
   STUDENT
-  TEACHER // Tôi thêm ví dụ, bạn có thể xóa nếu chưa cần
+  MENTOR
   ADMIN
+}
+
+enum TestStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
 }
 
 enum SchoolCategory {
@@ -30,48 +37,59 @@ enum ApplicationStatus {
   WAITLISTED
 }
 
-// 2. Định nghĩa bảng Users
+// 2. Bảng Users (Core Auth)
 model users {
-  // uuid_generate_v4() tương đương với @default(uuid()) trong Prisma
-  id                   String                 @id @default(uuid()) @db.Uuid
-  full_name            String                 @db.VarChar(100)
-  email                String                 @unique @db.VarChar(255)
-  password_hash        String?                @db.VarChar(255)
-  phone_number         String?                @db.VarChar(20)
-  // default 'STUDENT'
-  role                 UserRole               @default(STUDENT)
-  auth_provider        String?                @default("LOCAL") @db.VarChar(50)
-  auth_provider_id     String?                @db.VarChar(255)
-  avatar_url           String?
-  is_active            Boolean?               @default(true)
-  created_at           DateTime?              @default(now()) @db.Timestamp(6)
+  id               String    @id @default(uuid()) @db.Uuid
+  full_name        String    @db.VarChar(100)
+  email            String    @unique @db.VarChar(255)
+  password_hash    String?   @db.VarChar(255)
+  phone_number     String?   @db.VarChar(20)
+  role             UserRole  @default(STUDENT)
+  auth_provider    String?   @default("LOCAL") @db.VarChar(50)
+  auth_provider_id String?   @db.VarChar(255)
+  avatar_url       String?
+  is_active        Boolean?  @default(true)
+  created_at       DateTime? @default(now()) @db.Timestamp(6)
+
+  // Relations
   students             students[]
   student_applications student_applications[]
 }
 
-// 2. Bảng Students (Thông tin hồ sơ chính)
+// 3. Bảng Students (Hồ sơ chính)
 model students {
-  user_id         String    @id @db.Uuid
-  user            users     @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  current_school  String?   @db.VarChar(255)
-  current_grade   String?   @db.VarChar(50)
-  current_address String?
-  talents         String?
-  hobbies         String?
-  target_country  String?   @db.VarChar(100)
-  intended_major  String?   @db.VarChar(255)
-  yearly_budget   Decimal?  @db.Decimal(15, 2)
-  personal_desire String?
-  created_at      DateTime? @default(now()) @db.Timestamp(6)
-  updated_at      DateTime? @default(now()) @db.Timestamp(6)
+  user_id               String                     @id @db.Uuid
+  user                  users                      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  current_school        String?                    @db.VarChar(255)
+  current_grade         String?                    @db.VarChar(50)
+  current_address       String?
+  talents               String?
+  hobbies               String?
+  target_country        String?                    @db.VarChar(100)
+  intended_major        String?                    @db.VarChar(255)
+  yearly_budget         Decimal?                   @db.Decimal(15, 2)
+  personal_desire       String?
+  created_at            DateTime?                  @default(now()) @db.Timestamp(6)
+  updated_at            DateTime?                  @default(now()) @db.Timestamp(6)
+  // Cờ đánh dấu đã làm xong cả 3 bài chưa (True = Được xem gợi ý nghề nghiệp)
+  assessments_completed Boolean?                   @default(false)
+  // --- QUAN HỆ CŨ ---
+  academic_profile      student_academic_profiles?
+  background            student_backgrounds?
+  parents               student_parents[]
 
-  // Quan hệ 1-1 và 1-n
-  academic_profile student_academic_profiles?
-  background       student_backgrounds?
-  parents          student_parents[]
+  // Module 1: Phân tích hồ sơ (1-N vì có thể phân tích nhiều lần để xem tiến bộ)
+  profile_analyses profile_analyses[]
+  // Module 2: Các bài Test (1-1 Optional: Mỗi loại làm 1 lần)
+  mbti_test        mbti_tests?
+  riasec_test      riasec_tests?
+  grit_test        grit_tests?
+
+  // Kết quả gợi ý nghề nghiệp (1-N)
+  career_matches career_matches[]
 }
 
-// 3. Bảng Hồ sơ học thuật (GPA, chứng chỉ)
+// 4. Bảng Hồ sơ học thuật
 model student_academic_profiles {
   student_id String   @id @db.Uuid
   student    students @relation(fields: [student_id], references: [user_id], onDelete: Cascade)
@@ -82,11 +100,10 @@ model student_academic_profiles {
   updated_at             DateTime? @default(now()) @db.Timestamp(6)
 }
 
-// 4. Bảng Nền tảng ngoại khóa (Giải thưởng, kinh nghiệm)
+// 5. Bảng Nền tảng ngoại khóa
 model student_backgrounds {
-  student_id String   @id @db.Uuid
-  student    students @relation(fields: [student_id], references: [user_id], onDelete: Cascade)
-
+  student_id          String    @id @db.Uuid
+  student             students  @relation(fields: [student_id], references: [user_id], onDelete: Cascade)
   academic_awards     String?
   non_academic_awards String?
   work_experience     String?
@@ -94,7 +111,7 @@ model student_backgrounds {
   updated_at          DateTime? @default(now()) @db.Timestamp(6)
 }
 
-// 5. Bảng Phụ huynh
+// 6. Bảng Phụ huynh
 model student_parents {
   id         String    @id @default(uuid()) @db.Uuid
   student_id String?   @db.Uuid
@@ -108,7 +125,7 @@ model student_parents {
   created_at   DateTime? @default(now()) @db.Timestamp(6)
 }
 
-// 6. Bảng Universities (Cần thiết để bảng Applications hoạt động)
+// 7. Bảng Universities
 model universities {
   id                 Int     @id @default(autoincrement())
   name               String  @db.VarChar(255)
@@ -124,7 +141,7 @@ model universities {
   applications student_applications[]
 }
 
-// 7. Bảng Ứng tuyển (Applications)
+// 8. Bảng Ứng tuyển (Applications)
 model student_applications {
   id String @id @default(uuid()) @db.Uuid
 
@@ -140,4 +157,123 @@ model student_applications {
   updated_at     DateTime?         @default(now()) @db.Timestamp(6)
 
   @@unique([user_id, university_id])
+}
+
+// ==========================================================
+// CÁC BẢNG MỚI CHO TÍNH NĂNG AI & TEST (MODULE 1 & 2)
+// ==========================================================
+
+// 9. Module 1: Phân tích hồ sơ (AI Profile Analysis)
+model profile_analyses {
+  id         String   @id @default(uuid()) @db.Uuid
+  student_id String   @db.Uuid
+  student    students @relation(fields: [student_id], references: [user_id], onDelete: Cascade)
+
+  analysis_date DateTime @default(now()) @db.Timestamp(6)
+
+  // Dữ liệu đầu vào để AI phân tích (Snapshot tại thời điểm phân tích)
+  academic_data        Json @default("{}") // GPA, SAT snapshot
+  extracurricular_data Json @default("{}") // Activities snapshot
+  skill_data           Json @default("{}")
+
+  // Điểm số do AI chấm
+  overall_score         Float?
+  academic_score        Float?
+  extracurricular_score Float?
+
+  // Kết quả phân tích text
+  summary   String? @db.Text
+  swot_data Json?   @default("{}") // {strengths: [], weaknesses: []...}
+
+  created_at DateTime? @default(now()) @db.Timestamp(6)
+
+  @@index([student_id])
+}
+
+// 10. Module 2: Bài Test MBTI
+model mbti_tests {
+  id         String   @id @default(uuid()) @db.Uuid
+  student_id String   @unique @db.Uuid
+  student    students @relation(fields: [student_id], references: [user_id], onDelete: Cascade)
+
+  // --- TIẾN TRÌNH ---
+  status       TestStatus @default(IN_PROGRESS)
+  current_step Int        @default(0)
+  answers      Json       @default("[]")
+
+  // --- KẾT QUẢ (PHẢI LÀ NULLABLE ?) ---
+  result_type String? @db.VarChar(10) // Ví dụ: INTJ (Thêm trường này để lưu kết quả chữ)
+
+  // SỬA: Thêm dấu ? vào tất cả các dòng dưới đây
+  score_e Float?
+  score_i Float?
+  score_s Float?
+  score_n Float?
+  score_t Float?
+  score_f Float?
+  score_j Float?
+  score_p Float?
+
+  completed_at DateTime? @db.Timestamp(6)
+  updated_at   DateTime? @default(now()) @db.Timestamp(6)
+}
+
+// 11. Module 2: Bài Test RIASEC
+model riasec_tests {
+  id         String   @id @default(uuid()) @db.Uuid
+  student_id String   @unique @db.Uuid
+  student    students @relation(fields: [student_id], references: [user_id], onDelete: Cascade)
+
+  // --- TIẾN TRÌNH ---
+  status       TestStatus @default(IN_PROGRESS)
+  current_step Int        @default(0)
+  answers      Json       @default("{}")
+
+  // --- KẾT QUẢ (PHẢI LÀ NULLABLE ?) ---
+  result_code String? @db.VarChar(10) // Ví dụ: RIE (Thêm trường này)
+
+  // SỬA: Thêm dấu ?
+  score_realistic     Float?
+  score_investigative Float?
+  score_artistic      Float?
+  score_social        Float?
+  score_enterprising  Float?
+  score_conventional  Float?
+
+  top_3_types Json? @default("[]")
+
+  completed_at DateTime? @db.Timestamp(6)
+  updated_at   DateTime? @default(now()) @db.Timestamp(6)
+}
+
+// 12. Module 2: Bài Test GRIT (Nghị lực)
+model grit_tests {
+  id           String     @id @default(uuid()) @db.Uuid
+  student_id   String     @unique @db.Uuid
+  student      students   @relation(fields: [student_id], references: [user_id], onDelete: Cascade)
+  // --- QUẢN LÝ TIẾN TRÌNH ---
+  status       TestStatus @default(IN_PROGRESS)
+  current_step Int        @default(0)
+  answers      Json       @default("{}")
+  // --- KẾT QUẢ (Nullable) ---
+  total_score  Float?
+  level        String?    @db.VarChar(50)
+  description  String?    @db.Text
+  completed_at DateTime?  @db.Timestamp(6)
+  updated_at   DateTime?  @default(now()) @db.Timestamp(6)
+}
+
+// 13. Module 2: Gợi ý nghề nghiệp (Career Matches)
+model career_matches {
+  id         String   @id @default(uuid()) @db.Uuid
+  student_id String   @db.Uuid
+  student    students @relation(fields: [student_id], references: [user_id], onDelete: Cascade)
+
+  job_title        String  @db.VarChar(255)
+  match_percentage Float // Độ phù hợp (0-100)
+  reasoning        String? @db.Text // AI giải thích tại sao hợp
+
+  created_at DateTime @default(now()) @db.Timestamp(6)
+
+  @@index([student_id])
 }

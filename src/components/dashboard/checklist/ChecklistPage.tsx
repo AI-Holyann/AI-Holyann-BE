@@ -1,6 +1,7 @@
 'use client'
 
 import React, {useState, useMemo, useCallback} from 'react';
+import {useRouter} from 'next/navigation';
 import {
     CheckSquare,
     Square,
@@ -72,6 +73,37 @@ const ChecklistPage: React.FC = () => {
             requiresFile: true,
             category: 'Khởi động',
             feedback: 'Sau khi upload, AI sẽ tự động trích xuất: thông tin cá nhân, học vấn, kinh nghiệm, kỹ năng, và thành tích từ CV của bạn.'
+        },
+        // 3 task khám phá bản thân mới
+        {
+            id: '1-3',
+            stageId: 1,
+            title: 'Làm bài test MBTI - Khám phá kiểu tính cách',
+            deadline: '30/10/2023',
+            isCompleted: false,
+            category: 'Khám phá bản thân',
+            linkTo: '/dashboard/tests',
+            feedback: 'Bài test MBTI giúp bạn hiểu rõ kiểu tính cách của mình, từ đó định hướng nghề nghiệp và môi trường học tập phù hợp.'
+        },
+        {
+            id: '1-4',
+            stageId: 1,
+            title: 'Làm bài test Grit Scale - Đánh giá độ bền bỉ',
+            deadline: '30/10/2023',
+            isCompleted: false,
+            category: 'Khám phá bản thân',
+            linkTo: '/dashboard/tests',
+            feedback: 'Grit Scale đo lường mức độ kiên trì và đam mê theo đuổi mục tiêu dài hạn của bạn.'
+        },
+        {
+            id: '1-5',
+            stageId: 1,
+            title: 'Làm bài test Holland (RIASEC) - Xu hướng nghề nghiệp',
+            deadline: '30/10/2023',
+            isCompleted: false,
+            category: 'Khám phá bản thân',
+            linkTo: '/dashboard/tests',
+            feedback: 'Holland Code giúp xác định xu hướng nghề nghiệp dựa trên 6 nhóm tính cách: Realistic, Investigative, Artistic, Social, Enterprising, Conventional.'
         },
 
         // Stage 2
@@ -197,6 +229,8 @@ const ChecklistPage: React.FC = () => {
     const [scannedProfile, setScannedProfile] = useState<StudentProfile | null>(null);
     const [cvScanError, setCvScanError] = useState<string>('');
 
+    const router = useRouter();
+
     const currentStageTasks = useMemo(() =>
             tasks.filter(t => t.stageId === activeStageId),
         [tasks, activeStageId]);
@@ -232,6 +266,15 @@ const ChecklistPage: React.FC = () => {
             }
             return newSet;
         });
+    };
+
+    // Handle task click - navigate to test page if task has linkTo and is not completed
+    const handleTaskClick = (task: Task) => {
+        if (task.linkTo && !task.isCompleted) {
+            router.push(task.linkTo);
+        } else {
+            handleToggleExpand(task.id);
+        }
     };
 
     const handleCVUpload = async (event: React.ChangeEvent<HTMLInputElement>, taskId: string) => {
@@ -296,7 +339,7 @@ const ChecklistPage: React.FC = () => {
         return groups;
     }, [currentStageTasks]);
 
-    const orderedCategories = ['Khởi động', 'Chung', 'Hồ sơ học thuật', 'Tài liệu cần thiết', 'Cá nhân hóa (Mục tiêu Mỹ)'];
+    const orderedCategories = ['Khởi động', 'Khám phá bản thân', 'Chung', 'Hồ sơ học thuật', 'Tài liệu cần thiết', 'Cá nhân hóa (Mục tiêu Mỹ)'];
 
     return (
         <div className="w-full max-w-7xl mx-auto p-4 md:p-8">
@@ -381,8 +424,8 @@ const ChecklistPage: React.FC = () => {
                                                         task.isCompleted
                                                             ? 'border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50'
                                                             : `border-gray-200 dark:border-gray-600 hover:border-blue-300 dark:hover:border-blue-500 hover:shadow-lg ${isExpanded ? 'ring-1 ring-blue-300 shadow-md' : 'hover:-translate-y-0.5'}`
-                                                    }`}
-                                                    onClick={() => handleToggleExpand(task.id)}
+                                                    } ${task.linkTo && !task.isCompleted ? 'hover:border-purple-400 hover:ring-1 hover:ring-purple-200' : ''}`}
+                                                    onClick={() => handleTaskClick(task)}
                                                 >
                                                     <div className="flex items-center justify-between p-4">
                                                         <div className="flex items-center gap-4 flex-1">
@@ -415,6 +458,13 @@ const ChecklistPage: React.FC = () => {
                                                                 }`}>
                                                                 {task.title}
                                                             </span>
+                                                            {task.linkTo && !task.isCompleted && (
+                                                                <span
+                                                                    className="ml-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300">
+                                                                    <Sparkles size={12}/>
+                                                                    Làm bài test
+                                                                </span>
+                                                            )}
                                                         </div>
 
                                                         <div className="flex items-center ml-4">
@@ -590,6 +640,50 @@ const ChecklistPage: React.FC = () => {
                                                                             {task.feedback}
                                                                         </div>
                                                                     </div>
+                                                                </div>
+                                                            )}
+
+                                                            {task.category === 'Khám phá bản thân' && (
+                                                                <div className="mt-2">
+                                                                    {task.feedback && (
+                                                                        <div
+                                                                            className="mb-4 p-4 bg-purple-50 dark:bg-purple-900/20 border border-purple-100 dark:border-purple-800 rounded-xl">
+                                                                            <div
+                                                                                className="flex items-center gap-2 mb-2">
+                                                                                <Sparkles size={16}
+                                                                                          className="text-purple-500"/>
+                                                                                <span
+                                                                                    className="text-sm font-bold text-purple-700 dark:text-purple-300">Mô tả bài test</span>
+                                                                            </div>
+                                                                            <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+                                                                                {task.feedback}
+                                                                            </p>
+                                                                        </div>
+                                                                    )}
+                                                                    {task.linkTo && !task.isCompleted && (
+                                                                        <button
+                                                                            onClick={(e) => {
+                                                                                e.stopPropagation();
+                                                                                router.push(task.linkTo!);
+                                                                            }}
+                                                                            className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white rounded-xl font-semibold shadow-lg shadow-purple-200 dark:shadow-purple-900/30 transition-all transform hover:scale-[1.02]"
+                                                                        >
+                                                                            <Sparkles size={18}/>
+                                                                            Làm bài test ngay
+                                                                            <ArrowRight size={18}/>
+                                                                        </button>
+                                                                    )}
+                                                                    {task.isCompleted && (
+                                                                        <div
+                                                                            className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl">
+                                                                            <div className="flex items-center gap-2">
+                                                                                <CheckSquare size={18}
+                                                                                             className="text-green-600"/>
+                                                                                <span
+                                                                                    className="text-sm font-bold text-green-700 dark:text-green-300">Bạn đã hoàn thành bài test này!</span>
+                                                                            </div>
+                                                                        </div>
+                                                                    )}
                                                                 </div>
                                                             )}
                                                         </div>

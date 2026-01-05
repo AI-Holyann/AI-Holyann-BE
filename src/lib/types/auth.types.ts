@@ -6,6 +6,7 @@ export interface User {
     full_name: string
     email: string
     password_hash?: string
+    phone_number?: string
     role: UserRole
     auth_provider: AuthProvider
     auth_provider_id?: string

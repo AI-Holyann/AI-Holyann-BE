@@ -34,10 +34,12 @@ export function AuthProvider({children}: { children: ReactNode }) {
 
         if (session?.user && status === 'authenticated') {
             // Normalize role to lowercase for consistency
-            let role = (session.user.role as string)?.toLowerCase() as UserRole || 'user'
-            // Map 'STUDENT' to 'student'
-            if (role === 'STUDENT') role = 'student'
-            
+            const rawRole = (session.user.role as string)?.toLowerCase() || 'user'
+            // Ensure it's a valid UserRole
+            const role: UserRole = (rawRole === 'student' || rawRole === 'mentor' || rawRole === 'admin')
+                ? rawRole
+                : 'user'
+
             const userData: User = {
                 email: session.user.email || '',
                 name: session.user.name || session.user.email || 'Người dùng',

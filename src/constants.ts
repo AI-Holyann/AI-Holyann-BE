@@ -1,5 +1,10 @@
 import {Question, StudentProfile, TestType} from '@/components/types';
 
+// Import questions từ các file riêng
+import {RIASEC_QUESTIONS_V2} from '@/data/riasec-questions';
+import {GRIT_QUESTIONS_SORTED} from '@/data/grit-questions';
+import {MBTI_QUESTIONS_SORTED} from '@/data/mbti-questions';
+
 // Mock Student Profile based on the screenshot
 export const STUDENT_PROFILE: StudentProfile = {
     id: "HS001",
@@ -27,8 +32,25 @@ export const STUDENT_PROFILE: StudentProfile = {
     documents: []
 };
 
-// Extracted from PDF - RIASEC (Holland Code)
-export const RIASEC_QUESTIONS: Question[] = [
+// ============================================
+// MAIN QUESTIONS - Dùng cho production
+// ============================================
+
+// RIASEC questions - 48 câu Có/Không tiếng Việt
+export const RIASEC_QUESTIONS: Question[] = RIASEC_QUESTIONS_V2;
+
+// GRIT questions - 12 câu Likert Scale đầy đủ
+export const GRIT_QUESTIONS: Question[] = GRIT_QUESTIONS_SORTED;
+
+// MBTI questions - 60 câu Likert Scale
+export const MBTI_QUESTIONS: Question[] = MBTI_QUESTIONS_SORTED;
+
+// ============================================
+// LEGACY QUESTIONS - Giữ lại cho tham khảo
+// ============================================
+
+// Extracted from PDF - RIASEC (Holland Code) - Legacy
+export const RIASEC_QUESTIONS_LEGACY: Question[] = [
     {id: 1, type: 'RIASEC', text: "Test the quality of parts before shipment", category: 'R'},
     {id: 2, type: 'RIASEC', text: "Lay brick or tile", category: 'R'},
     {id: 3, type: 'RIASEC', text: "Work on an offshore oil-drilling rig", category: 'R'},
@@ -46,12 +68,12 @@ export const RIASEC_QUESTIONS: Question[] = [
     {id: 44, type: 'RIASEC', text: "Maintain employee records", category: 'C'},
 ];
 
-// Extracted from PDF - Grit Scale
-export const GRIT_QUESTIONS: Question[] = [
+// Extracted from PDF - Grit Scale - Legacy (7 câu)
+export const GRIT_QUESTIONS_LEGACY: Question[] = [
     {
         id: 101,
         type: 'GRIT',
-        text: "Tôi đã vượt qua những khó khăn để chinh phục thử thách quan trọng.",
+        text: "Tôi thường hoàn thành những gì mình đã bắt đầu.",
         reverseScore: false
     },
     {
@@ -77,39 +99,61 @@ export const GRIT_QUESTIONS: Question[] = [
     },
 ];
 
-// Extracted from PDF - MBTI (Simplified for Demo)
-export const MBTI_QUESTIONS: Question[] = [
+// Extracted from PDF - MBTI (Simplified for Demo) - Legacy
+export const MBTI_QUESTIONS_LEGACY: Question[] = [
     {
-        id: 201, type: 'MBTI', dimension: 'EI',
-        text: "Bạn thích công việc kiểu:",
-        optionA: "Xã hội, giao tiếp", optionB: "Thiết kế, nghiên cứu"
+        id: 201,
+        type: 'MBTI',
+        dimension: 'EI',
+        text: "Bạn thích:",
+        optionA: "Gặp gỡ nhiều người mới",
+        optionB: "Ở nhà hoặc gặp gỡ với bạn thân"
     },
     {
-        id: 202, type: 'MBTI', dimension: 'EI',
+        id: 202,
+        type: 'MBTI',
+        dimension: 'EI',
         text: "Trong các cuộc giao tiếp, bạn là người:",
-        optionA: "Bắt đầu cho cuộc nói chuyện.", optionB: "Chỉ nói khi người khác bắt chuyện."
+        optionA: "Bắt đầu cho cuộc nói chuyện.",
+        optionB: "Chỉ nói khi người khác bắt chuyện."
     },
     {
-        id: 203, type: 'MBTI', dimension: 'TF',
+        id: 203,
+        type: 'MBTI',
+        dimension: 'TF',
         text: "Bạn đánh giá sự việc dựa trên:",
-        optionA: "Ý nghĩa, giá trị", optionB: "Tính logic"
+        optionA: "Ý nghĩa, giá trị",
+        optionB: "Tính logic"
     },
     {
-        id: 204, type: 'MBTI', dimension: 'JP',
+        id: 204,
+        type: 'MBTI',
+        dimension: 'JP',
         text: "Bạn là người có tác phong:",
-        optionA: "Thong thả, thoải mái", optionB: "Nhanh nhẹn, đúng giờ"
+        optionA: "Thong thả, thoải mái",
+        optionB: "Nhanh nhẹn, đúng giờ"
     },
     {
-        id: 205, type: 'MBTI', dimension: 'SN',
+        id: 205,
+        type: 'MBTI',
+        dimension: 'SN',
         text: "Bạn thích các sự việc xảy ra:",
-        optionA: "Có chọn lựa và suy tính", optionB: "Một cách tự nhiên"
+        optionA: "Có chọn lựa và suy tính",
+        optionB: "Một cách tự nhiên"
     },
     {
-        id: 206, type: 'MBTI', dimension: 'TF',
+        id: 206,
+        type: 'MBTI',
+        dimension: 'TF',
         text: "Bạn là người thế nào:",
-        optionA: "Là người có cái đầu lạnh", optionB: "Là người có trái tim ấm"
+        optionA: "Là người có cái đầu lạnh",
+        optionB: "Là người có trái tim ấm"
     }
 ];
+
+// ============================================
+// TEST DESCRIPTIONS
+// ============================================
 
 export const TEST_DESCRIPTIONS = {
     MBTI: {
@@ -117,14 +161,15 @@ export const TEST_DESCRIPTIONS = {
         desc: "Khám phá 16 nhóm tính cách để hiểu rõ điểm mạnh, điểm yếu và môi trường làm việc phù hợp.",
         color: "bg-blue-500"
     },
-    GRIT: {
-        title: "Grit Scale",
-        desc: "Đo lường sự bền bỉ và đam mê với các mục tiêu dài hạn. Yếu tố quan trọng để thành công khi du học.",
-        color: "bg-purple-500"
-    },
     RIASEC: {
         title: "Sở thích nghề nghiệp (Holland)",
         desc: "Xác định nhóm ngành nghề phù hợp dựa trên 6 nhóm sở thích: Thực tế, Nghiên cứu, Nghệ thuật, Xã hội, Quản lý, Nghiệp vụ.",
         color: "bg-emerald-500"
+    },
+    GRIT: {
+        title: "Đánh giá nghị lực (GRIT)",
+        desc: "Đo lường sự kiên trì và đam mê với mục tiêu dài hạn của bạn.",
+        color: "bg-purple-500"
     }
 };
+

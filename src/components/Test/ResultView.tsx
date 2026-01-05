@@ -1,22 +1,65 @@
 import React from 'react';
-import {RotateCcw, Sparkles, BookOpen, Briefcase, Target, TrendingUp} from 'lucide-react';
-import {TestResult, MajorRecommendation} from '../types';
+import {
+    RotateCcw,
+    Sparkles,
+    BookOpen,
+    Briefcase,
+    Target,
+    TrendingUp,
+    ArrowRight,
+    Brain,
+    Activity,
+    Trophy
+} from 'lucide-react';
+import {TestResult, MajorRecommendation, TestType} from '../types';
 import ResultChart from './ResultChart';
+import {TEST_DESCRIPTIONS} from '@/constants';
 
 interface ResultViewProps {
     result: TestResult | null;
     recommendations: MajorRecommendation[];
     loadingRecommendations: boolean;
     onBackToDashboard: () => void;
+    // New props for test progress
+    remainingTests?: TestType[];
+    onStartNextTest?: (type: TestType) => void;
+    allTestsCompleted?: boolean;
+    onViewAllRecommendations?: () => void;
 }
 
 const ResultView: React.FC<ResultViewProps> = ({
                                                    result,
                                                    recommendations,
                                                    loadingRecommendations,
-                                                   onBackToDashboard
+                                                   onBackToDashboard,
+                                                   remainingTests = [],
+                                                   onStartNextTest,
+                                                   allTestsCompleted = false,
+                                                   onViewAllRecommendations
                                                }) => {
     if (!result) return null;
+
+    const getTestIcon = (type: TestType) => {
+        switch (type) {
+            case 'MBTI':
+                return <Brain className="w-5 h-5"/>;
+            case 'GRIT':
+                return <Activity className="w-5 h-5"/>;
+            case 'RIASEC':
+                return <Briefcase className="w-5 h-5"/>;
+        }
+    };
+
+    const getTestColor = (type: TestType) => {
+        switch (type) {
+            case 'MBTI':
+                return 'bg-blue-500 hover:bg-blue-600';
+            case 'GRIT':
+                return 'bg-purple-500 hover:bg-purple-600';
+            case 'RIASEC':
+                return 'bg-emerald-500 hover:bg-emerald-600';
+        }
+    };
 
     return (
         <div className="space-y-8 animate-fade-in">
@@ -36,6 +79,61 @@ const ResultView: React.FC<ResultViewProps> = ({
                 </div>
                 <div
                     className="absolute right-0 top-0 h-full w-1/3 opacity-10 pointer-events-none bg-white skew-x-12 transform translate-x-20"></div>
+            </div>
+
+            {/* Next Steps - Làm bài test tiếp theo hoặc Xem đề xuất */}
+            <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-2xl p-6 border border-purple-100">
+                {allTestsCompleted ? (
+                    // Đã hoàn thành tất cả
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                            <div className="p-3 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl text-white">
+                                <Trophy className="w-8 h-8"/>
+                            </div>
+                            <div>
+                                <h3 className="text-xl font-bold text-gray-800">🎉 Hoàn thành tất cả bài test!</h3>
+                                <p className="text-gray-600">Xem đề xuất ngành nghề dựa trên kết quả của bạn</p>
+                            </div>
+                        </div>
+                        <button
+                            onClick={onViewAllRecommendations}
+                            className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl font-bold hover:from-purple-700 hover:to-blue-700 transition-all shadow-lg"
+                        >
+                            <Sparkles className="w-5 h-5"/>
+                            Xem đề xuất ngành nghề
+                            <ArrowRight className="w-5 h-5"/>
+                        </button>
+                    </div>
+                ) : remainingTests.length > 0 ? (
+                    // Còn bài test chưa làm
+                    <div>
+                        <div className="flex items-center gap-2 mb-4">
+                            <Sparkles className="w-5 h-5 text-purple-600"/>
+                            <h3 className="text-lg font-bold text-gray-800">
+                                Tiếp tục khám phá bản thân
+                            </h3>
+                            <span className="text-sm text-gray-500 ml-2">
+                                (Còn {remainingTests.length} bài test)
+                            </span>
+                        </div>
+                        <p className="text-gray-600 mb-4">
+                            Hoàn thành tất cả 3 bài test để nhận đề xuất ngành nghề phù hợp nhất với bạn!
+                        </p>
+                        <div className="flex flex-wrap gap-3">
+                            {remainingTests.map(testType => (
+                                <button
+                                    key={testType}
+                                    onClick={() => onStartNextTest?.(testType)}
+                                    className={`flex items-center gap-2 px-5 py-3 ${getTestColor(testType)} text-white rounded-xl font-semibold transition-all shadow-md hover:shadow-lg hover:scale-105`}
+                                >
+                                    {getTestIcon(testType)}
+                                    Làm bài {TEST_DESCRIPTIONS[testType].title}
+                                    <ArrowRight className="w-4 h-4"/>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                ) : null}
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

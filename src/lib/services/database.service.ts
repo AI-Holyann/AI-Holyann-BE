@@ -34,6 +34,81 @@ export class DatabaseService {
     }
 
     /**
+     * Tạo hồ sơ student mặc định với retry mechanism
+     */
+    private static async createStudentProfile(userId: string, retries = 2): Promise<void> {
+        const studentData = {user_id: userId};
+        console.log('📝 [DatabaseService] Creating student profile for:', userId);
+
+        // 1. Supabase
+        try {
+            const {data: existingStudent} = await supabaseAdmin
+                .from('students')
+                .select('user_id')
+                .eq('user_id', userId)
+                .single();
+
+            if (!existingStudent) {
+                const {error: supabaseError} = await supabaseAdmin
+                    .from('students')
+                    .insert(studentData);
+
+                if (supabaseError) {
+                    console.error('❌ [DatabaseService] Failed to create student profile in Supabase:', supabaseError);
+                } else {
+                    console.log('✅ [DatabaseService] Student profile created in Supabase');
+                }
+            } else {
+                console.log('ℹ️ [DatabaseService] Student profile already exists in Supabase');
+            }
+        } catch (error) {
+            console.error('⚠️ [DatabaseService] Error checking/creating student in Supabase:', error);
+        }
+
+        // 2. Local DB (Prisma) với retry
+        for (let attempt = 1; attempt <= retries; attempt++) {
+            try {
+                // Check if student already exists
+                const existingStudent = await prisma.students.findUnique({
+                    where: {user_id: userId}
+                });
+
+                if (!existingStudent) {
+                    await prisma.students.create({
+                        data: studentData
+                    });
+                    console.log('✅ [DatabaseService] Student profile created in Local DB');
+                } else {
+                    console.log('ℹ️ [DatabaseService] Student profile already exists in Local DB');
+                }
+                return; // Success, exit retry loop
+            } catch (error: any) {
+                const errorMsg = error.message || '';
+
+                // Skip retry for certain errors
+                if (errorMsg.includes('Circuit breaker open') && attempt === 1) {
+                    console.warn('⚠️ [DatabaseService] Local DB circuit breaker is open, skipping student profile creation');
+                    return;
+                }
+
+                if (errorMsg.includes('Unique constraint failed')) {
+                    console.log('ℹ️ [DatabaseService] Student profile already exists in Local DB (unique constraint)');
+                    return;
+                }
+
+                console.error(`⚠️ [DatabaseService] Student profile creation attempt ${attempt} failed:`, errorMsg);
+
+                if (attempt === retries) {
+                    console.error('❌ [DatabaseService] Failed to create student profile in Local DB after retries');
+                } else {
+                    console.log('🔄 Retrying student profile creation...');
+                    await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1s before retry
+                }
+            }
+        }
+    }
+
+    /**
      * Tạo user mới trong database (đồng bộ cả Supabase và Local DB)
      */
     static async createUser(data: RegisterData): Promise<User | null> {
@@ -75,6 +150,11 @@ export class DatabaseService {
 
             // 2. Đồng bộ vào Local Database (Prisma) với retry
             await this.syncToLocalDB(insertData);
+
+            // 3. Nếu là STUDENT, tạo hồ sơ student
+            if (insertData.role === 'STUDENT') {
+                await this.createStudentProfile(userId);
+            }
 
             return supabaseUser as User;
         } catch (error: any) {
@@ -125,6 +205,9 @@ export class DatabaseService {
 
             // 2. Đồng bộ vào Local Database (Prisma) với retry
             await this.syncToLocalDB(userData);
+
+            // 3. Tạo hồ sơ student (OAuth user mặc định là STUDENT)
+            await this.createStudentProfile(userId);
 
             return supabaseUser as User;
         } catch (error: any) {

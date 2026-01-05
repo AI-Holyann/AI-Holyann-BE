@@ -23,9 +23,14 @@ const normalizeRole = (role?: string) => {
 const mapUserForStorage = (user: AuthResponse['user']) => {
     if (!user) return null
     return {
-        ...user,
-        name: (user as any).name || (user as any).full_name || user.email,
-        role: normalizeRole(user.role as any)
+        id: user.id,
+        user_id: user.id,  // Alias for compatibility
+        email: user.email,
+        full_name: user.full_name,
+        name: user.full_name || user.email,
+        role: normalizeRole(user.role as any),
+        avatar_url: user.avatar_url,
+        image: user.avatar_url  // NextAuth compatibility
     }
 }
 
@@ -60,7 +65,22 @@ export function useAuth(options: UseAuthOptions = {}) {
                 const storedUser = mapUserForStorage(result.user)
                 localStorage.setItem('auth_token', result.token)
                 storedUser && localStorage.setItem('user', JSON.stringify(storedUser))
-                
+
+                // Lưu session data để tương thích với NextAuth
+                const sessionData = {
+                    user: {
+                        id: result.user.id,
+                        user_id: result.user.id,
+                        email: result.user.email,
+                        name: result.user.full_name,
+                        full_name: result.user.full_name,
+                        role: result.user.role,
+                        image: result.user.avatar_url,
+                        accessToken: result.token
+                    }
+                }
+                localStorage.setItem('session', JSON.stringify(sessionData))
+
                 // ✅ Cập nhật AuthContext ngay lập tức
                 authContext.login(
                     result.user.email,
@@ -68,7 +88,7 @@ export function useAuth(options: UseAuthOptions = {}) {
                     normalizeRole(result.user.role) as any,
                     result.user.avatar_url
                 )
-                
+
                 if (!skipRedirect) {
                     router.push('/dashboard')
                 }
@@ -111,7 +131,22 @@ export function useAuth(options: UseAuthOptions = {}) {
                 const storedUser = mapUserForStorage(result.user)
                 localStorage.setItem('auth_token', result.token)
                 storedUser && localStorage.setItem('user', JSON.stringify(storedUser))
-                
+
+                // Lưu session data để tương thích với NextAuth
+                const sessionData = {
+                    user: {
+                        id: result.user.id,
+                        user_id: result.user.id,
+                        email: result.user.email,
+                        name: result.user.full_name,
+                        full_name: result.user.full_name,
+                        role: result.user.role,
+                        image: result.user.avatar_url,
+                        accessToken: result.token
+                    }
+                }
+                localStorage.setItem('session', JSON.stringify(sessionData))
+
                 // ✅ Cập nhật AuthContext ngay lập tức
                 authContext.login(
                     result.user.email,
@@ -119,7 +154,7 @@ export function useAuth(options: UseAuthOptions = {}) {
                     normalizeRole(result.user.role) as any,
                     result.user.avatar_url
                 )
-                
+
                 if (!skipRedirect) {
                     router.push('/dashboard')
                 }
@@ -144,6 +179,7 @@ export function useAuth(options: UseAuthOptions = {}) {
     const logout = () => {
         localStorage.removeItem('auth_token')
         localStorage.removeItem('user')
+        localStorage.removeItem('session')
         // ✅ Cập nhật AuthContext ngay lập tức
         authContext.logout()
         router.push('/login')

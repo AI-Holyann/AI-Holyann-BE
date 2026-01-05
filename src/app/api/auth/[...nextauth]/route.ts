@@ -39,10 +39,16 @@ export const authOptions: NextAuthOptions = {
                 });
 
                 if (result.success && result.token) {
-                    // Lưu token vào user object để sử dụng trong session
+                    // Lưu token và thông tin user vào user object để sử dụng trong session
                     user.accessToken = result.token;
                     user.role = result.user?.role;
-                    console.log('✅ [NextAuth] User will be logged in:', user.email);
+                    user.id = result.user?.id;  // User ID từ database
+                    user.full_name = result.user?.full_name;
+                    console.log('✅ [NextAuth] User will be logged in:', {
+                        email: user.email,
+                        id: user.id,
+                        role: user.role
+                    });
                 } else {
                     console.error('❌ [NextAuth] OAuth login failed:', result.message);
                 }
@@ -60,6 +66,8 @@ export const authOptions: NextAuthOptions = {
             if (user) {
                 token.accessToken = user.accessToken
                 token.role = user.role
+                token.id = user.id
+                token.full_name = user.name
             }
             return token
         },
@@ -67,6 +75,9 @@ export const authOptions: NextAuthOptions = {
             if (session.user) {
                 session.user.accessToken = token.accessToken as string
                 session.user.role = token.role as string
+                session.user.id = token.id as string
+                session.user.user_id = token.id as string  // Alias for compatibility
+                session.user.full_name = token.full_name as string
             }
             return session
         },
