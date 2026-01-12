@@ -73,6 +73,7 @@ export interface Task {
     requiresFile?: boolean;    // Does this task require a file upload?
     uploadedFile?: string;     // Name of the uploaded file (if any)
     feedback?: string;         // Mentor feedback
+    linkTo?: string;           // Link to navigate when task is clicked (for test tasks)
 }
 
 export interface Stage {
@@ -84,36 +85,68 @@ export interface Stage {
 
 export type TestType = 'MBTI' | 'GRIT' | 'RIASEC';
 
+export type MBTIDimension = 'E/I' | 'S/N' | 'T/F' | 'J/P';
+export type GritComponent = 'passion' | 'perseverance';
+
+// Legacy interface for backward compatibility
 export interface Question {
     id: number;
     text: string;
     type: TestType;
+
     // For MBTI
     optionA?: string;
     optionB?: string;
-    dimension?: string; // E.g., 'EI', 'SN', 'TF', 'JP'
+    dimension?: string | MBTIDimension;
+    positiveDirection?: boolean;
 
     // For RIASEC
-    category?: string; // R, I, A, S, E, C
+    category?: string;
 
-    // For Grit
-    reverseScore?: boolean; // Some Grit questions are reverse coded
+    // For GRIT
+    component?: GritComponent;
+    reverse?: boolean;
 }
 
+export interface TestQuestion {
+    id: string;
+    question: string;
+    reverse?: boolean; // true = reverse score (6 - answer)
 
+
+// Specific test question types with id field
+    // For MBTI (Legacy - A/B options)
+export interface MBTIQuestion {
+    id: number;
+    type: TestType;
+    text: string;
+    dimension: MBTIDimension;
+    positiveDirection: boolean;
+}
+
+export interface RIASECQuestion {
+}
+
+export interface GritQuestion {
+    id: number;
+    text: string;
+    component: GritComponent;
+}
+
+// Test Result interface
 export interface TestResult {
     type: TestType;
-    scores: Record<string, number>; // e.g. { 'R': 15, 'I': 20 } or { 'Grit': 4.5 }
-    rawLabel?: string; // e.g., "ENTJ" or "High Grit"
-    description?: string;
+    scores: Record<string, number>;
+    rawLabel: string;
+    description: string;
 }
 
+// Major Recommendation interface
 export interface MajorRecommendation {
-    name: string; // Tên ngành học
-    category: string; // Phân loại: STEM, Arts, Business, etc.
-    matchReason: string; // Lý do phù hợp với tính cách
-    careerPaths: string[]; // Các con đường sự nghiệp
-    requiredSkills: string[]; // Kỹ năng cần thiết
-    matchPercentage: number; // Độ phù hợp (0-100)
+    name: string;
+    category: string;
+    matchReason: string;
+    careerPaths: string[];
+    requiredSkills: string[];
+    matchPercentage?: number;
 }
-

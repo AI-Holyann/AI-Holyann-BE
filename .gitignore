@@ -42,3 +42,5 @@ next-env.d.ts
 
 # ignore .idea folder
 .idea/
+
+.env

@@ -1,228 +1,527 @@
 'use client';
 
-import React, {useState} from 'react';
-import {useRouter} from 'next/navigation';
+import React, {useEffect, useMemo, useState} from 'react';
 import AuthHeader from '@/components/dashboard/AuthHeader';
 import TestSelection from '@/components/Test/TestSelection';
 import TestView from '@/components/Test/TestView';
 import ResultView from '@/components/Test/ResultView';
+import CareerAssessmentResults from '@/components/CareerAssessmentResults';
 import {TestType, Question, TestResult, MajorRecommendation} from '@/components/types';
 import {MBTI_QUESTIONS, GRIT_QUESTIONS, RIASEC_QUESTIONS} from '@/constants';
+import {calculateMBTIResult as calculateMBTIScores, MBTI_TYPE_DESCRIPTIONS} from '@/data/mbti-questions';
+import {
+    calculateRIASECResult as calculateRIASECScores,
+    getHollandCodeDescription,
+    RIASEC_CATEGORIES
+} from '@/data/riasec-questions';
+import {calculateGritResult as calculateGritScores, GRIT_COMPONENTS} from '@/data/grit-questions';
 import {getMajorRecommendations} from '@/service/geminiService';
+import {useTestProgress} from '@/hooks/useTestProgress';
+import {useSession} from 'next-auth/react'
 
 type ViewState = 'selection' | 'test' | 'result';
 
 export default function TestsPage() {
-    const router = useRouter();
     const [viewState, setViewState] = useState<ViewState>('selection');
     const [currentTestType, setCurrentTestType] = useState<TestType | null>(null);
     const [testResult, setTestResult] = useState<TestResult | null>(null);
     const [recommendations, setRecommendations] = useState<MajorRecommendation[]>([]);
     const [loadingRecommendations, setLoadingRecommendations] = useState(false);
+    const {data: session} = useSession()
 
-    const handleStartTest = (type: TestType) => {
-        setCurrentTestType(type);
-        setViewState('test');
-    };
+    const [currentTestId, setCurrentTestId] = useState<string | null>(null)
+    const [currentQuestions, setCurrentQuestions] = useState<Question[]>([])
+    const [careerRecs, setCareerRecs] = useState<MajorRecommendation[]>([])
+    const [showCareerAssessment, setShowCareerAssessment] = useState(false)
+
+    // State để lưu remainingTests tại thời điểm hoàn thành test (để tránh async state issue)
+    const [currentRemainingTests, setCurrentRemainingTests] = useState<TestType[]>([]);
+    const [currentAllCompleted, setCurrentAllCompleted] = useState(false);
+
+    // Memoize studentId để tránh re-render không cần thiết
+    const studentId = useMemo(() => {
+        // 1. Thử lấy từ NextAuth session trước
+        const sessionUserId = (session?.user as any)?.id || (session?.user as any)?.user_id
+        if (sessionUserId) {
+            console.log('✅ Got student ID from NextAuth session:', sessionUserId)
+            return sessionUserId as string
+        }
+
+        // 2. Thử lấy từ localStorage session (cho local auth)
+        if (typeof window !== 'undefined') {
+            try {
+                const localSession = localStorage.getItem('session')
+                if (localSession) {
+                    const parsed = JSON.parse(localSession)
+                    const localUserId = parsed.user?.id || parsed.user?.user_id
+                    if (localUserId) {
+                        console.log('✅ Got student ID from localStorage session:', localUserId)
+                        return localUserId as string
+                    }
+                }
+            } catch (e) {
+                console.warn('Could not parse session from localStorage:', e)
+            }
+
+            // 3. Fallback: thử lấy từ localStorage user (legacy)
+            try {
+                const saved = localStorage.getItem('user')
+                if (saved) {
+                    const parsed = JSON.parse(saved)
+                    const legacyUserId = parsed.id || parsed.user_id
+                    if (legacyUserId) {
+                        console.log('✅ Got student ID from localStorage user (legacy):', legacyUserId)
+                        return legacyUserId as string
+                    }
+                }
+            } catch (e) {
+                console.warn('Could not parse user from localStorage:', e)
+            }
+        }
+
+        console.warn('❌ Could not find student ID from any source')
+        return null
+    }, [session]);
+
+    // Tự động tạo student profile nếu chưa có
+    useEffect(() => {
+        const ensureStudentProfile = async () => {
+            if (studentId && session) {
+                try {
+                    const response = await fetch('/api/create-student', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({user_id: studentId})
+                    })
+                    const data = await response.json()
+                    if (!data.success) {
+                        console.error('Failed to ensure student profile:', data.error)
+                    } else {
+                        console.log('✅ Student profile ensured')
+                    }
+                } catch (error) {
+                    console.error('Error ensuring student profile:', error)
+                }
+            }
+        }
+
+        ensureStudentProfile()
+    }, [studentId, session])
+
+    // Hook để quản lý tiến độ test - giờ lấy từ database
+    const {
+        progress,
+        isLoaded,
+        saveTestResult,
+    } = useTestProgress(studentId);
+
+    const getStudentId = () => studentId;
+
+    // Đồng bộ remainingTests và allCompleted từ progress hook
+    useEffect(() => {
+        setCurrentAllCompleted(progress.allCompleted);
+        const allTests: TestType[] = ['MBTI', 'GRIT', 'RIASEC'];
+        setCurrentRemainingTests(allTests.filter(t => !progress.completedTests.includes(t)));
+    }, [progress]);
+
+    // Lấy career recommendations nếu đã hoàn thành tất cả tests
+    useEffect(() => {
+        if (studentId && progress.allCompleted && isLoaded) {
+            fetchCareerRecommendations(studentId);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [studentId, progress.allCompleted, isLoaded]);
+
+    const handleStartTest = async (type: TestType) => {
+        const studentId = getStudentId()
+        if (!studentId) {
+            alert('Không tìm thấy thông tin user. Vui lòng đăng nhập lại.')
+            return
+        }
+
+        console.log('🚀 Starting test:', type, 'for student:', studentId)
+
+        try {
+            const res = await fetch('/api/tests', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({student_id: studentId, test_type: type.toLowerCase()})
+            })
+
+            if (!res.ok) {
+                const errorText = await res.text()
+                console.error('API Error:', res.status, errorText)
+                alert(`Lỗi server (${res.status}): ${errorText}`)
+                return
+            }
+
+            const data = await res.json()
+            console.log('API Response:', data)
+
+            if (!data.success) {
+                console.error('Test creation failed:', data.error)
+                alert(data.error || 'Không thể bắt đầu bài test')
+                return
+            }
+
+            setCurrentTestId(data.test_id)
+            setCurrentQuestions(data.questions || getQuestionsForTest(type))
+            setCurrentTestType(type)
+            setViewState('test')
+
+        } catch (e) {
+            console.error('Start test failed', e)
+            alert('Không thể bắt đầu bài test. Kiểm tra kết nối.')
+        }
+    }
 
     const getQuestionsForTest = (type: TestType): Question[] => {
+        if (currentTestType === type && currentQuestions.length) return currentQuestions
         switch (type) {
             case 'MBTI':
-                return MBTI_QUESTIONS;
+                return MBTI_QUESTIONS
             case 'GRIT':
-                return GRIT_QUESTIONS;
+                return GRIT_QUESTIONS
             case 'RIASEC':
-                return RIASEC_QUESTIONS;
+                return RIASEC_QUESTIONS
             default:
-                return [];
+                return []
         }
-    };
+    }
 
-    const calculateMBTIResult = (answers: Record<number, string | number>): TestResult => {
-        const scores: Record<string, number> = {E: 0, I: 0, S: 0, N: 0, T: 0, F: 0, J: 0, P: 0};
+    const submitAnswersToApi = async (answers: Record<number, string | number | boolean>, testType: TestType) => {
+        if (!currentTestId) return
+        const studentId = getStudentId()
+        if (!studentId) {
+            console.error('No student ID found')
+            return
+        }
 
-        MBTI_QUESTIONS.forEach(q => {
-            const answer = answers[q.id];
-            if (answer === 'A' && q.dimension) {
-                scores[q.dimension[0]]++;
-            } else if (answer === 'B' && q.dimension) {
-                scores[q.dimension[1]]++;
-            }
+        console.log('📤 [Submit] Submitting all answers at once:', {
+            test_id: currentTestId,
+            test_type: testType,
+            count: Object.keys(answers).length
+        })
+
+        // Gửi TẤT CẢ đáp án trong 1 API call duy nhất
+        const response = await fetch('/api/tests/submit', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                test_id: currentTestId,
+                student_id: studentId,
+                test_type: testType.toLowerCase(),
+                answers: answers  // Gửi toàn bộ object
+            })
+        })
+
+        const data = await response.json()
+
+        if (!response.ok || !data.success) {
+            console.error('❌ [Submit] Failed:', data.error)
+            throw new Error(data.error || 'Failed to submit test')
+        }
+
+        console.log('✅ [Submit] Success:', data.result)
+        return data.result
+    }
+
+    const calculateMBTIResult = (answers: Record<number, string | number | boolean>): TestResult => {
+        // Chuyển đổi answers sang Record<number, number> cho hàm tính điểm
+        const numericAnswers: Record<number, number> = {};
+        Object.entries(answers).forEach(([key, value]) => {
+            numericAnswers[Number(key)] = Number(value);
         });
 
-        const type =
-            (scores.E > scores.I ? 'E' : 'I') +
-            (scores.S > scores.N ? 'S' : 'N') +
-            (scores.T > scores.F ? 'T' : 'F') +
-            (scores.J > scores.P ? 'J' : 'P');
+        // Sử dụng hàm tính điểm từ file mbti-questions.ts
+        const result = calculateMBTIScores(numericAnswers);
+        const typeInfo = MBTI_TYPE_DESCRIPTIONS[result.type];
 
-        // Convert to percentages
-        const totalEI = scores.E + scores.I;
-        const totalSN = scores.S + scores.N;
-        const totalTF = scores.T + scores.F;
-        const totalJP = scores.J + scores.P;
-
-        const percentageScores = {
-            E: totalEI > 0 ? Math.round((scores.E / totalEI) * 100) : 0,
-            I: totalEI > 0 ? Math.round((scores.I / totalEI) * 100) : 0,
-            S: totalSN > 0 ? Math.round((scores.S / totalSN) * 100) : 0,
-            N: totalSN > 0 ? Math.round((scores.N / totalSN) * 100) : 0,
-            T: totalTF > 0 ? Math.round((scores.T / totalTF) * 100) : 0,
-            F: totalTF > 0 ? Math.round((scores.F / totalTF) * 100) : 0,
-            J: totalJP > 0 ? Math.round((scores.J / totalJP) * 100) : 0,
-            P: totalJP > 0 ? Math.round((scores.P / totalJP) * 100) : 0,
-        };
-
-        const descriptions: Record<string, string> = {
-            'INTJ': 'Kiến trúc sư - Người có tư duy chiến lược, sáng tạo và luôn có kế hoạch cho mọi việc.',
-            'INTP': 'Nhà logic học - Người đổi mới, ham học hỏi và luôn tìm kiếm kiến thức mới.',
-            'ENTJ': 'Chỉ huy quan - Lãnh đạo táo bạo, giàu trí tưởng tượng và ý chí mạnh mẽ.',
-            'ENTP': 'Nhà tranh luận - Người thông minh, tò mò và không thể cưỡng lại trí thách thức.',
-            'INFJ': 'Người ủng hộ - Lý tưởng hóa, tầm nhìn xa và đầy cảm hứng.',
-            'INFP': 'Người hòa giải - Thi sĩ, tử tế và luôn sẵn sàng giúp đỡ.',
-            'ENFJ': 'Người chủ xướng - Lãnh đạo đầy cảm hứng, thu hút và dễ gây ấn tượng.',
-            'ENFP': 'Nhà vận động - Người nhiệt tình, sáng tạo và lạc quan.',
-            'ISTJ': 'Người trách nhiệm - Thực tế, đáng tin cậy và tỉ mỉ.',
-            'ISFJ': 'Người bảo vệ - Tận tâm, ấm áp và luôn sẵn sàng bảo vệ người thân.',
-            'ESTJ': 'Người điều hành - Quản lý giỏi, thẳng thắn và truyền thống.',
-            'ESFJ': 'Người cung cấp - Quan tâm, hợp tác và luôn muốn giúp đỡ.',
-            'ISTP': 'Người khéo léo - Táo bạo, thực tế và thích thử nghiệm.',
-            'ISFP': 'Nghệ sĩ - Linh hoạt, dễ chịu và sẵn sàng khám phá.',
-            'ESTP': 'Doanh nhân - Năng động, thông minh và sống hết mình.',
-            'ESFP': 'Nghệ sĩ biểu diễn - Tự phát, nhiệt tình và vui vẻ.'
-        };
+        console.log('📊 [MBTI Result]', {
+            type: result.type,
+            percentages: result.percentages,
+            rawScores: result.scores
+        });
 
         return {
             type: 'MBTI',
-            scores: percentageScores,
-            rawLabel: type,
-            description: descriptions[type] || 'Kết quả MBTI của bạn.'
+            scores: result.percentages,
+            rawLabel: result.type,
+            description: typeInfo
+                ? `${typeInfo.title} (${typeInfo.nickname}) - ${typeInfo.description}`
+                : `Kết quả MBTI của bạn: ${result.type}`
         };
     };
 
-    const calculateGritResult = (answers: Record<number, string | number>): TestResult => {
-        let perseveranceScore = 0;
-        let consistencyScore = 0;
-        let perseveranceCount = 0;
-        let consistencyCount = 0;
-
-        GRIT_QUESTIONS.forEach(q => {
-            const answer = Number(answers[q.id]) || 0;
-            const score = q.reverseScore ? (6 - answer) : answer;
-
-            // Odd questions = Perseverance, Even = Consistency
-            if (q.id % 2 === 1) {
-                perseveranceScore += score;
-                perseveranceCount++;
-            } else {
-                consistencyScore += score;
-                consistencyCount++;
-            }
+    const calculateGritResult = (answers: Record<number, string | number | boolean>): TestResult => {
+        // Chuyển đổi answers sang Record<number, number> cho hàm tính điểm
+        const numericAnswers: Record<number, number> = {};
+        Object.entries(answers).forEach(([key, value]) => {
+            numericAnswers[Number(key)] = Number(value);
         });
 
-        const avgPerseverance = perseveranceCount > 0 ? perseveranceScore / perseveranceCount : 0;
-        const avgConsistency = consistencyCount > 0 ? consistencyScore / consistencyCount : 0;
-        const gritScore = (avgPerseverance + avgConsistency) / 2;
+        // Sử dụng hàm tính điểm từ file grit-questions.ts
+        const result = calculateGritScores(numericAnswers);
 
-        let label = 'Low Grit';
-        let description = 'Bạn cần phát triển thêm sự kiên trì và đam mê với mục tiêu dài hạn.';
+        console.log('📊 [GRIT Result]', {
+            gritScore: result.gritScore,
+            passionScore: result.passionScore,
+            perseveranceScore: result.perseveranceScore,
+            level: result.level.level
+        });
 
-        if (gritScore >= 4.0) {
-            label = 'High Grit';
-            description = 'Bạn có sự kiên trì và đam mê xuất sắc với các mục tiêu dài hạn!';
-        } else if (gritScore >= 3.0) {
-            label = 'Moderate Grit';
-            description = 'Bạn có mức độ kiên trì khá tốt, nhưng vẫn có thể cải thiện thêm.';
-        }
+        // Tạo description chi tiết
+        const passionInfo = GRIT_COMPONENTS.passion;
+        const perseveranceInfo = GRIT_COMPONENTS.perseverance;
+
+        const description = `${result.level.level} (${result.level.level_en}): ${result.level.description}
+
+📊 Chi tiết điểm số:
+• ${passionInfo.name_vi} (${passionInfo.name}): ${result.passionScore}/5.0 - ${result.passionLevel.level}
+• ${perseveranceInfo.name_vi} (${perseveranceInfo.name}): ${result.perseveranceScore}/5.0 - ${result.perseveranceLevel.level}`;
 
         return {
             type: 'GRIT',
             scores: {
-                Grit: parseFloat(gritScore.toFixed(2)),
-                Perseverance: parseFloat(avgPerseverance.toFixed(2)),
-                Consistency: parseFloat(avgConsistency.toFixed(2))
+                Grit: result.gritScore,
+                [passionInfo.name_vi]: result.passionScore,
+                [perseveranceInfo.name_vi]: result.perseveranceScore
             },
-            rawLabel: label,
+            rawLabel: result.level.level,
             description: description
         };
     };
 
-    const calculateRIASECResult = (answers: Record<number, string | number>): TestResult => {
-        const scores: Record<string, number> = {R: 0, I: 0, A: 0, S: 0, E: 0, C: 0};
-
-        RIASEC_QUESTIONS.forEach(q => {
-            const answer = Number(answers[q.id]) || 0;
-            if (q.category) {
-                scores[q.category] += answer;
-            }
+    const calculateRIASECResult = (answers: Record<number, string | number | boolean>): TestResult => {
+        // Chuyển đổi answers sang Record<number, boolean> cho hàm tính điểm
+        const booleanAnswers: Record<number, boolean> = {};
+        Object.entries(answers).forEach(([key, value]) => {
+            // Xử lý cả boolean trực tiếp và các giá trị khác
+            booleanAnswers[Number(key)] = value === true || value === 'true' || value === 1;
         });
 
-        const sortedCategories = Object.entries(scores)
-            .sort(([, a], [, b]) => b - a)
-            .map(([cat]) => cat);
+        // Sử dụng hàm tính điểm từ file riasec-questions.ts
+        const result = calculateRIASECScores(booleanAnswers);
+        const codeInfo = getHollandCodeDescription(result.hollandCode);
 
-        const topCode = sortedCategories.slice(0, 3).join('');
+        console.log('📊 [RIASEC Result]', {
+            hollandCode: result.hollandCode,
+            percentages: result.percentages,
+            topThree: result.topThree
+        });
 
-        const descriptions: Record<string, string> = {
-            'R': 'Realistic (Thực tế) - Thích làm việc với tay, máy móc, thực hành.',
-            'I': 'Investigative (Nghiên cứu) - Thích tư duy, nghiên cứu, khám phá.',
-            'A': 'Artistic (Nghệ thuật) - Thích sáng tạo, nghệ thuật, thể hiện bản thân.',
-            'S': 'Social (Xã hội) - Thích giúp đỡ, dạy dỗ, chăm sóc người khác.',
-            'E': 'Enterprising (Quản lý) - Thích lãnh đạo, thuyết phục, kinh doanh.',
-            'C': 'Conventional (Nghiệp vụ) - Thích tổ chức, quản lý dữ liệu, chi tiết.'
-        };
+        // Tạo description từ top 3 categories
+        const topCategoriesDesc = result.topThree
+            .map(t => `${RIASEC_CATEGORIES[t.category].name_vi} (${t.category})`)
+            .join(' - ');
 
         return {
             type: 'RIASEC',
-            scores: scores,
-            rawLabel: topCode,
-            description: `Nhóm ngành nghề phù hợp: ${descriptions[sortedCategories[0]]} ${descriptions[sortedCategories[1]]} ${descriptions[sortedCategories[2]]}`
+            scores: result.percentages,
+            rawLabel: result.hollandCode,
+            description: `${codeInfo.title}: ${codeInfo.description}\n\nXu hướng chính: ${topCategoriesDesc}`
         };
     };
 
-    const handleTestComplete = async (answers: Record<number, string | number>) => {
-        if (!currentTestType) return;
-
-        let result: TestResult;
-
-        switch (currentTestType) {
-            case 'MBTI':
-                result = calculateMBTIResult(answers);
-                break;
-            case 'GRIT':
-                result = calculateGritResult(answers);
-                break;
-            case 'RIASEC':
-                result = calculateRIASECResult(answers);
-                break;
-            default:
-                return;
+    const handleTestComplete = async (answers: Record<number, string | number | boolean>) => {
+        if (!currentTestType) return
+        const studentId = getStudentId()
+        if (!studentId || !currentTestId) {
+            alert('Không tìm thấy student_id hoặc test_id. Vui lòng thử lại.')
+            return
         }
 
-        setTestResult(result);
-        setViewState('result');
-
-        // Fetch AI major recommendations based purely on personality test
-        setLoadingRecommendations(true);
         try {
-            const recs = await getMajorRecommendations(result);
-            setRecommendations(recs);
+            // Gửi đáp án và nhận kết quả ngay từ API submit
+            const apiResult = await submitAnswersToApi(answers, currentTestType)
+
+            // For MBTI, call AI model to predict and save result
+            if (currentTestType === 'MBTI') {
+                console.log('🤖 [MBTI] Calling AI model for prediction...')
+                const aiResponse = await fetch('/api/ai/predict-mbti', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({test_id: currentTestId})
+                })
+
+                const aiData = await aiResponse.json()
+                
+                if (aiData.success && aiData.result) {
+                    console.log('✅ [MBTI] AI prediction received:', aiData.result.personality_type)
+                    
+                    const typeInfo = MBTI_TYPE_DESCRIPTIONS[aiData.result.personality_type] || {
+                        title: aiData.result.personality_type,
+                        description: 'Đang cập nhật mô tả...'
+                    }
+                    
+                    setTestResult({
+                        type: 'MBTI',
+                        scores: aiData.result.scores,
+                        rawLabel: aiData.result.personality_type,
+                        description: typeInfo.description
+                    })
+                    saveTestResult('MBTI', {
+                        type: 'MBTI',
+                        scores: aiData.result.scores,
+                        rawLabel: aiData.result.personality_type,
+                        description: typeInfo.description
+                    })
+                } else {
+                    console.warn('⚠️ AI prediction failed, calculating locally')
+                    const localResult = calculateMBTIResult(answers)
+                    setTestResult(localResult)
+                    saveTestResult('MBTI', localResult)
+                }
+            }
+            // For other tests, use API result or local calculation
+            else {
+                let computedResult: TestResult | null = null
+
+                if (apiResult) {
+                    if (currentTestType === 'RIASEC' && apiResult.result_code) {
+                        computedResult = {
+                            type: 'RIASEC',
+                            scores: apiResult.scores || {},
+                            rawLabel: apiResult.result_code,
+                            description: ''
+                        }
+                    } else if (currentTestType === 'GRIT' && apiResult.total_score !== undefined) {
+                        computedResult = {
+                            type: 'GRIT',
+                            scores: {
+                                Grit: apiResult.total_score,
+                                'Đam mê': apiResult.passion_score || 0,
+                                'Kiên trì': apiResult.perseverance_score || 0
+                            },
+                            rawLabel: apiResult.level,
+                            description: apiResult.description || ''
+                        }
+                    }
+                }
+
+                // Fall back local calc nếu API không trả về kết quả
+                if (!computedResult) {
+                    console.warn('⚠️ API did not return result, calculating locally')
+                    switch (currentTestType) {
+                        case 'RIASEC':
+                            computedResult = calculateRIASECResult(answers)
+                            break
+                        case 'GRIT':
+                            computedResult = calculateGritResult(answers)
+                            break
+                    }
+                }
+
+                if (computedResult) {
+                    setTestResult(computedResult)
+                    saveTestResult(currentTestType, computedResult)
+                }
+            }
+
+            // Cập nhật remainingTests & allCompleted tạm thời
+            const allTests: TestType[] = ['MBTI', 'GRIT', 'RIASEC']
+            const newCompleted = progress.completedTests.includes(currentTestType)
+                ? progress.completedTests
+                : [...progress.completedTests, currentTestType]
+            const remaining = allTests.filter(t => !newCompleted.includes(t)) as TestType[]
+            setCurrentRemainingTests(remaining)
+            const newAllCompleted = newCompleted.length >= 3
+            setCurrentAllCompleted(newAllCompleted)
+
+            setViewState('result')
+
+            // Nếu đã đủ 3 bài, gọi complete all để lấy career recs và cập nhật DB
+            if (newAllCompleted) {
+                try {
+                    await fetch('/api/tests/complete', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({student_id: studentId})
+                    })
+                    await fetchCareerRecommendations(studentId)
+                } catch (e) {
+                    console.error('Complete all tests error', e)
+                }
+            } else {
+                setCareerRecs([])
+            }
         } catch (error) {
-            console.error('Failed to fetch major recommendations:', error);
-            setRecommendations([]);
-        } finally {
-            setLoadingRecommendations(false);
+            console.error('❌ Test submission error:', error)
+            alert('Có lỗi xảy ra khi nộp bài test. Vui lòng thử lại.')
         }
-    };
+    }
+
+    const fetchCareerRecommendations = async (studentId: string) => {
+        try {
+            const res = await fetch(`/api/tests/career/${studentId}`)
+            const data = await res.json()
+            if (data.success) {
+                const recs: MajorRecommendation[] = (data.recommendations || []).map((r: any) => ({
+                    name: r.job_title,
+                    category: '',
+                    matchReason: r.reasoning,
+                    careerPaths: [],
+                    requiredSkills: [],
+                    matchPercentage: r.match_percentage
+                }))
+                setCareerRecs(recs)
+                setRecommendations(recs)
+            }
+        } catch (e) {
+            console.error('Fetch career recs error', e)
+        }
+    }
 
     const handleBackToSelection = () => {
         setViewState('selection');
         setCurrentTestType(null);
+        setCurrentTestId(null)
+        setTestResult(null);
+        setRecommendations([]);
     };
 
-    const handleBackToDashboard = () => {
-        router.push('/dashboard/profile');
+    const handleStartNextTest = (type: TestType) => {
+        setCurrentTestType(null)
+        setTestResult(null)
+        setRecommendations([])
+        handleStartTest(type)
     };
+
+    const handleViewAllRecommendations = async () => {
+        const studentId = getStudentId()
+        if (!studentId) return
+        await fetchCareerRecommendations(studentId)
+        setViewState('selection')
+    };
+
+    const handleViewResult = (type: TestType) => {
+        // Lấy kết quả đã lưu từ progress và hiển thị
+        const result = progress.results[type];
+        if (result) {
+            setTestResult(result);
+            setCurrentTestType(type);
+            setViewState('result');
+        } else {
+            console.warn('No saved result found for', type);
+            alert('Không tìm thấy kết quả bài test này.');
+        }
+    };
+
+    // Loading state khi chưa load xong từ localStorage
+    if (!isLoaded) {
+        return (
+            <>
+                <AuthHeader/>
+                <main
+                    className="min-h-screen bg-white dark:bg-gradient-to-br dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex items-center justify-center">
+                        <div
+                            className="w-8 h-8 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+                    </div>
+                </main>
+            </>
+        );
+    }
 
     return (
         <>
@@ -231,7 +530,23 @@ export default function TestsPage() {
                 className="min-h-screen bg-white dark:bg-gradient-to-br dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 transition-colors duration-300">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                     {viewState === 'selection' && (
-                        <TestSelection onStartTest={handleStartTest}/>
+                        <>
+                            <TestSelection
+                                onStartTest={handleStartTest}
+                                onViewResult={handleViewResult}
+                                completedTests={progress.completedTests}
+                                testResults={progress.results}
+                                onViewRecommendations={handleViewAllRecommendations}
+                            />
+                            
+                            {/* Career Assessment Results - chỉ hiển thị ở trang selection khi hoàn thành tất cả 3 bài test */}
+                            {currentAllCompleted && studentId && (
+                                <CareerAssessmentResults
+                                    studentId={studentId}
+                                    onClose={() => setShowCareerAssessment(false)}
+                                />
+                            )}
+                        </>
                     )}
 
                     {viewState === 'test' && currentTestType && (
@@ -246,9 +561,13 @@ export default function TestsPage() {
                     {viewState === 'result' && (
                         <ResultView
                             result={testResult}
-                            recommendations={recommendations}
+                            recommendations={careerRecs.length ? careerRecs : recommendations}
                             loadingRecommendations={loadingRecommendations}
-                            onBackToDashboard={handleBackToDashboard}
+                            onBackToDashboard={handleBackToSelection}
+                            remainingTests={currentRemainingTests}
+                            onStartNextTest={handleStartNextTest}
+                            allTestsCompleted={currentAllCompleted}
+                            onViewAllRecommendations={handleViewAllRecommendations}
                         />
                     )}
                 </div>
@@ -256,4 +575,3 @@ export default function TestsPage() {
         </>
     );
 }
-

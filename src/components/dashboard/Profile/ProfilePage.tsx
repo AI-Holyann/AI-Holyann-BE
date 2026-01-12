@@ -15,6 +15,7 @@ interface ProfilePageProps {
     onEditClick: () => void;
     onUploadDocument: (file: File, type: DocumentType) => void;
     onDeleteDocument: (id: string) => void;
+    onAnalyzeProfile?: () => void;
 }
 
 // StatusBadge component - moved outside to avoid React hooks rules violation
@@ -33,7 +34,8 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                                                             profile,
                                                             onEditClick,
                                                             onUploadDocument,
-                                                            onDeleteDocument
+                                                            onDeleteDocument,
+                                                            onAnalyzeProfile
                                                         }) => {
     const router = useRouter();
     const pathname = usePathname();
@@ -137,13 +139,24 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                     <h1 className="text-3xl font-bold text-gray-900">Hồ sơ học sinh</h1>
                     <p className="text-gray-500 mt-1">Quản lý toàn diện thông tin cá nhân và hồ sơ du học</p>
                 </div>
-                <button
-                    onClick={onEditClick}
-                    className="flex items-center gap-2 bg-[var(--brand-blue)] hover:bg-[var(--brand-blue)]/90 text-white px-6 py-2.5 rounded-lg font-medium transition-colors shadow-md"
-                >
-                    <Edit3 size={18}/>
-                    Cập nhật hồ sơ
-                </button>
+                <div className="flex gap-3">
+                    {onAnalyzeProfile && (
+                        <button
+                            onClick={onAnalyzeProfile}
+                            className="flex items-center gap-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-6 py-2.5 rounded-lg font-medium transition-all shadow-md hover:shadow-lg"
+                        >
+                            <Sparkles size={18}/>
+                            Phân tích hồ sơ AI
+                        </button>
+                    )}
+                    <button
+                        onClick={onEditClick}
+                        className="flex items-center gap-2 bg-[var(--brand-blue)] hover:bg-[var(--brand-blue)]/90 text-white px-6 py-2.5 rounded-lg font-medium transition-colors shadow-md"
+                    >
+                        <Edit3 size={18}/>
+                        Cập nhật hồ sơ
+                    </button>
+                </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">

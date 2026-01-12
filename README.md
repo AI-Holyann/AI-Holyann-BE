@@ -2,6 +2,23 @@
 
 Platform AI hỗ trợ du học và định cư toàn diện.
 
+## 🎊 UPDATES
+
+### ✅ **Latest Fixes (Jan 9, 2026)**
+- 🔧 Fixed "permission denied" error when creating student profiles
+- 🔧 Fixed "Unknown argument passion_score" in GRIT test submission
+- 🔧 Fixed GRIT passion/perseverance scores displaying as 0 in charts
+- 📚 See: [FIX_TEST_ERRORS_SUMMARY.md](./FIX_TEST_ERRORS_SUMMARY.md)
+
+### 🎯 **Test Navigation Features**
+- ✅ Navigate between questions freely with Previous/Next buttons
+- ✅ Jump to any question using the Question List Panel
+- ✅ Edit answers anytime before submitting
+- ✅ Visual progress tracking with colored indicators
+- 📖 Full guide: [NAVIGATION_USER_GUIDE.md](./NAVIGATION_USER_GUIDE.md)
+
+---
+
 ## 🎊 NEW: Hệ Thống Phân Quyền (Role-Based Authentication)
 
 Hệ thống phân quyền 3 vai trò đã được triển khai hoàn chỉnh:
