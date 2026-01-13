@@ -13,9 +13,7 @@ function createPrismaClient() {
 
         // Simple Prisma Client without adapter (more stable)
         return new PrismaClient({
-            log: process.env.NODE_ENV === 'development'
-                ? ['query', 'error', 'warn']
-                : ['error'],
+            log: [], // Disable all Prisma logs (no query, no error, no warn)
             datasources: {
                 db: {
                     url: connectionString || process.env.DATABASE_URL
@@ -26,7 +24,7 @@ function createPrismaClient() {
         console.error('❌ Error creating Prisma Client:', error)
         // Return a basic client as fallback
         return new PrismaClient({
-            log: ['error']
+            log: [] // Disable all logs
         })
     }
 }

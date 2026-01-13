@@ -1,95 +1,182 @@
-
-
-
-import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
 
 // Helper functions to map Vietnamese values to valid enum values
 function mapRole(role: string | null | undefined): string {
-  if (!role) return 'MEMBER';
+  if (!role) return "MEMBER";
   const roleUpper = role.toUpperCase();
-  if (['LEADER', 'CORE', 'MEMBER', 'HELP'].includes(roleUpper)) return roleUpper;
-  
+  if (["LEADER", "CORE", "MEMBER", "HELP"].includes(roleUpper))
+    return roleUpper;
+
   // Map Vietnamese to enum
   const roleMap: Record<string, string> = {
-    'chủ tịch': 'LEADER', 'chu tich': 'LEADER',
-    'trưởng nhóm': 'LEADER', 'truong nhom': 'LEADER',
-    'trưởng': 'LEADER', 'truong': 'LEADER',
-    'phó': 'CORE', 'pho': 'CORE',
-    'phó chủ tịch': 'CORE', 'pho chu tich': 'CORE',
-    'nòng cốt': 'CORE', 'nong cot': 'CORE',
-    'thành viên': 'MEMBER', 'thanh vien': 'MEMBER',
-    'hỗ trợ': 'HELP', 'ho tro': 'HELP',
-    'tình nguyện': 'MEMBER', 'tinh nguyen': 'MEMBER',
+    "chủ tịch": "LEADER",
+    "chu tich": "LEADER",
+    "trưởng nhóm": "LEADER",
+    "truong nhom": "LEADER",
+    trưởng: "LEADER",
+    truong: "LEADER",
+    phó: "CORE",
+    pho: "CORE",
+    "phó chủ tịch": "CORE",
+    "pho chu tich": "CORE",
+    "nòng cốt": "CORE",
+    "nong cot": "CORE",
+    "thành viên": "MEMBER",
+    "thanh vien": "MEMBER",
+    "hỗ trợ": "HELP",
+    "ho tro": "HELP",
+    "tình nguyện": "MEMBER",
+    "tinh nguyen": "MEMBER",
   };
-  
+
   const roleLower = role.toLowerCase();
   for (const [key, value] of Object.entries(roleMap)) {
     if (roleLower.includes(key)) return value;
   }
-  return 'MEMBER';
+  return "MEMBER";
 }
 
 function mapRegion(region: string | null | undefined): string {
-  if (!region) return 'school';
+  if (!region) return "school";
   const regionLower = region.toLowerCase();
-  const validRegions = ['international', 'national', 'province', 'city', 'school', 'local'];
+  const validRegions = [
+    "international",
+    "national",
+    "province",
+    "city",
+    "school",
+    "local",
+  ];
   if (validRegions.includes(regionLower)) return regionLower;
-  
+
   // Map Vietnamese
   const regionMap: Record<string, string> = {
-    'quốc tế': 'international', 'quoc te': 'international',
-    'quốc gia': 'national', 'quoc gia': 'national',
-    'tỉnh': 'province', 'tinh': 'province',
-    'thành phố': 'city', 'thanh pho': 'city',
-    'trường': 'school', 'truong': 'school',
-    'địa phương': 'local', 'dia phuong': 'local',
+    "quốc tế": "international",
+    "quoc te": "international",
+    "quốc gia": "national",
+    "quoc gia": "national",
+    tỉnh: "province",
+    tinh: "province",
+    "thành phố": "city",
+    "thanh pho": "city",
+    trường: "school",
+    truong: "school",
+    "địa phương": "local",
+    "dia phuong": "local",
   };
-  
+
   for (const [key, value] of Object.entries(regionMap)) {
     if (regionLower.includes(key)) return value;
   }
-  return 'school';
+  return "school";
 }
 
 function mapNonAcademicCategory(category: string | null | undefined): string {
-  if (!category) return 'art';
+  if (!category) return "art";
   const catLower = category.toLowerCase();
-  if (['art', 'sport'].includes(catLower)) return catLower;
-  
+  if (["art", "sport"].includes(catLower)) return catLower;
+
   // Map Vietnamese
-  if (catLower.includes('thể thao') || catLower.includes('the thao') || catLower.includes('sport')) return 'sport';
-  if (catLower.includes('nghệ thuật') || catLower.includes('nghe thuat') || catLower.includes('âm nhạc') || catLower.includes('am nhac') || catLower.includes('art') || catLower.includes('music')) return 'art';
-  
-  return 'art'; // default
+  if (
+    catLower.includes("thể thao") ||
+    catLower.includes("the thao") ||
+    catLower.includes("sport")
+  )
+    return "sport";
+  if (
+    catLower.includes("nghệ thuật") ||
+    catLower.includes("nghe thuat") ||
+    catLower.includes("âm nhạc") ||
+    catLower.includes("am nhac") ||
+    catLower.includes("art") ||
+    catLower.includes("music")
+  )
+    return "art";
+
+  return "art"; // default
 }
 
 function mapProjectTopic(topic: string | null | undefined): string {
-  if (!topic) return 'Science/Tech';
-  const validTopics = ['Science/Tech', 'Research', 'Culture/Business', 'Sport/Art'];
+  if (!topic) return "Science/Tech";
+  const validTopics = [
+    "Science/Tech",
+    "Research",
+    "Culture/Business",
+    "Sport/Art",
+  ];
   if (validTopics.includes(topic)) return topic;
-  
+
   const topicLower = topic.toLowerCase();
-  if (topicLower.includes('khoa học') || topicLower.includes('khoa hoc') || topicLower.includes('công nghệ') || topicLower.includes('cong nghe') || topicLower.includes('tech') || topicLower.includes('science')) return 'Science/Tech';
-  if (topicLower.includes('nghiên cứu') || topicLower.includes('nghien cuu') || topicLower.includes('research')) return 'Research';
-  if (topicLower.includes('văn hóa') || topicLower.includes('van hoa') || topicLower.includes('kinh doanh') || topicLower.includes('business') || topicLower.includes('culture')) return 'Culture/Business';
-  if (topicLower.includes('thể thao') || topicLower.includes('the thao') || topicLower.includes('nghệ thuật') || topicLower.includes('nghe thuat') || topicLower.includes('sport') || topicLower.includes('art')) return 'Sport/Art';
-  
-  return 'Science/Tech';
+  if (
+    topicLower.includes("khoa học") ||
+    topicLower.includes("khoa hoc") ||
+    topicLower.includes("công nghệ") ||
+    topicLower.includes("cong nghe") ||
+    topicLower.includes("tech") ||
+    topicLower.includes("science")
+  )
+    return "Science/Tech";
+  if (
+    topicLower.includes("nghiên cứu") ||
+    topicLower.includes("nghien cuu") ||
+    topicLower.includes("research")
+  )
+    return "Research";
+  if (
+    topicLower.includes("văn hóa") ||
+    topicLower.includes("van hoa") ||
+    topicLower.includes("kinh doanh") ||
+    topicLower.includes("business") ||
+    topicLower.includes("culture")
+  )
+    return "Culture/Business";
+  if (
+    topicLower.includes("thể thao") ||
+    topicLower.includes("the thao") ||
+    topicLower.includes("nghệ thuật") ||
+    topicLower.includes("nghe thuat") ||
+    topicLower.includes("sport") ||
+    topicLower.includes("art")
+  )
+    return "Sport/Art";
+
+  return "Science/Tech";
 }
 
 function mapProficiency(proficiency: string | null | undefined): string {
-  if (!proficiency) return 'INTERMEDIATE';
+  if (!proficiency) return "INTERMEDIATE";
   const profUpper = proficiency.toUpperCase();
-  if (['BEGINNER', 'INTERMEDIATE', 'ADVANCED', 'EXPERT'].includes(profUpper)) return profUpper;
-  
+  if (["BEGINNER", "INTERMEDIATE", "ADVANCED", "EXPERT"].includes(profUpper))
+    return profUpper;
+
   const profLower = proficiency.toLowerCase();
-  if (profLower.includes('cơ bản') || profLower.includes('co ban') || profLower.includes('beginner')) return 'BEGINNER';
-  if (profLower.includes('trung bình') || profLower.includes('trung binh') || profLower.includes('intermediate')) return 'INTERMEDIATE';
-  if (profLower.includes('nâng cao') || profLower.includes('nang cao') || profLower.includes('advanced')) return 'ADVANCED';
-  if (profLower.includes('chuyên gia') || profLower.includes('chuyen gia') || profLower.includes('expert')) return 'EXPERT';
-  
-  return 'INTERMEDIATE';
+  if (
+    profLower.includes("cơ bản") ||
+    profLower.includes("co ban") ||
+    profLower.includes("beginner")
+  )
+    return "BEGINNER";
+  if (
+    profLower.includes("trung bình") ||
+    profLower.includes("trung binh") ||
+    profLower.includes("intermediate")
+  )
+    return "INTERMEDIATE";
+  if (
+    profLower.includes("nâng cao") ||
+    profLower.includes("nang cao") ||
+    profLower.includes("advanced")
+  )
+    return "ADVANCED";
+  if (
+    profLower.includes("chuyên gia") ||
+    profLower.includes("chuyen gia") ||
+    profLower.includes("expert")
+  )
+    return "EXPERT";
+
+  return "INTERMEDIATE";
 }
 
 export async function POST(
@@ -114,17 +201,17 @@ export async function POST(
             research_experiences: true,
             subject_scores: true,
             personal_projects: true,
-          }
+          },
         },
         student_academic_profiles: true,
         student_parents: true,
         student_skills: true,
-      }
+      },
     });
 
     if (!studentData || !studentData.student_backgrounds) {
       return NextResponse.json(
-        { error: 'Không tìm thấy dữ liệu học sinh' },
+        { error: "Không tìm thấy dữ liệu học sinh" },
         { status: 404 }
       );
     }
@@ -165,27 +252,45 @@ export async function POST(
         })),
 
         // Research experiences
-        research_experiences: (background.research_experiences || []).map((r: any) => ({
-          topic: r.project_title,
-          role: r.role,
-          duration_months: r.duration_months,
-          description: r.description,
-          achievements: r.achievements,
-        })),
+        research_experiences: (background.research_experiences || []).map(
+          (r: any) => ({
+            topic: r.project_title,
+            role: r.role,
+            duration_months: r.duration_months,
+            description: r.description,
+            achievements: r.achievements,
+          })
+        ),
       },
 
       language_and_standardized: {
         // Languages from academic profile
-        languages: (Array.isArray(academicProfile?.english_certificates) ? academicProfile.english_certificates : []).map((l: any) => ({
-          language_name: l.type,
-          score: l.score,
-        })),
+        languages: (() => {
+          if (
+            !academicProfile ||
+            !Array.isArray(academicProfile.english_certificates)
+          ) {
+            return [];
+          }
+          return academicProfile.english_certificates.map((l: any) => ({
+            language_name: l.type,
+            score: l.score,
+          }));
+        })(),
 
         // Standardized tests
-        standardized_tests: (Array.isArray(academicProfile?.standardized_tests) ? academicProfile.standardized_tests : []).map((t: any) => ({
-          test_name: t.type,
-          score: t.score,
-        })),
+        standardized_tests: (() => {
+          if (
+            !academicProfile ||
+            !Array.isArray(academicProfile.standardized_tests)
+          ) {
+            return [];
+          }
+          return academicProfile.standardized_tests.map((t: any) => ({
+            test_name: t.type,
+            score: t.score,
+          }));
+        })(),
       },
 
       action: {
@@ -213,13 +318,15 @@ export async function POST(
       },
 
       // non_academic_awards must be an array directly
-      non_academic_awards: (background.non_academic_awards || []).map((a: any) => ({
-        award_name: a.award_name,
-        category: mapNonAcademicCategory(a.category),
-        year: a.year,
-        rank: a.rank,
-        region: mapRegion(a.region),
-      })),
+      non_academic_awards: (background.non_academic_awards || []).map(
+        (a: any) => ({
+          award_name: a.award_name,
+          category: mapNonAcademicCategory(a.category),
+          year: a.year,
+          rank: a.rank,
+          region: mapRegion(a.region),
+        })
+      ),
 
       // personal_projects must be an array directly
       personal_projects: (background.personal_projects || []).map((p: any) => ({
@@ -239,54 +346,32 @@ export async function POST(
       },
     };
 
-    // 3. Call Django API
-    // DJANGO_API_URL should be base URL like http://localhost:8000
-    // We always append /hoexapp/api/profile-analysis/
-    const djangoHost = (process.env.DJANGO_API_URL || 'http://localhost:8000').replace(/\/+$/, '').replace(/\/hoexapp\/?$/, '');
-    const profileApiUrl = `${djangoHost}/hoexapp/api/profile-analysis/`;
+    // 3. Call AI API using centralized client
+    const { callProfileAnalysis } = await import("@/lib/ai-api-client");
 
-    const response = await fetch(profileApiUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      // Disable caching so every request hits Django directly
-      cache: 'no-store',
-      body: JSON.stringify(feature1Payload),
-    });
-
-    if (!response.ok) {
-      const rawError = await response.text();
-      let errorData: any;
-      try {
-        errorData = rawError ? JSON.parse(rawError) : { error: 'Unknown error' };
-      } catch {
-        errorData = { error: rawError || 'Unknown error' };
-      }
+    let analysisResult;
+    try {
+      analysisResult = await callProfileAnalysis(feature1Payload);
+    } catch (error: any) {
       return NextResponse.json(
-        { 
-          error: 'Lỗi khi gọi API phân tích',
-          details: errorData,
-          target: profileApiUrl,
+        {
+          error: "Lỗi khi gọi API phân tích",
+          details: error.message || "Unknown error",
         },
-        { status: response.status }
+        { status: 500 }
       );
     }
-
-    // 4. Return kết quả
-    const analysisResult = await response.json();
 
     return NextResponse.json({
       success: true,
       data: analysisResult,
     });
-
   } catch (error: any) {
-    console.error('Error in analyze-profile API:', error);
+    console.error("Error in analyze-profile API:", error);
     return NextResponse.json(
-      { 
-        error: 'Lỗi server khi phân tích hồ sơ',
-        details: error.message 
+      {
+        error: "Lỗi server khi phân tích hồ sơ",
+        details: error.message,
       },
       { status: 500 }
     );

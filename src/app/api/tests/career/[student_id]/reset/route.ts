@@ -1,8 +1,6 @@
 import {NextRequest, NextResponse} from 'next/server';
 import {prisma} from '@/lib/prisma';
 
-const AI_API_URL = process.env.AI_API_URL || 'http://127.0.0.1:8000/hoexapp/api/career-assessment/';
-
 // ===========================================
 // DELETE /api/tests/career/[student_id]/reset - Xóa và tạo lại career recommendations
 // ===========================================
@@ -123,24 +121,50 @@ export async function DELETE(
 // ===========================================
 async function callAICareerAssessment(mbti_answers: unknown, riasec_answers: unknown, grit_answers: unknown) {
     try {
-        const response = await fetch(AI_API_URL, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({
-                mbti_answers,
-                riasec_answers,
-                grit_answers,
-                top_n: 10,
-                min_match_score: 50.0
-            })
-        });
-
-        if (!response.ok) {
-            console.error(`AI API returned ${response.status}`);
-            return {success: false, error: `AI API returned ${response.status}`};
+        const { callCareerAssessment } = await import('@/lib/ai-api-client');
+        
+        // Transform answers to expected format
+        const mbtiArray = Array.isArray(mbti_answers) 
+            ? mbti_answers.map(a => Math.max(-3, Math.min(3, Number(a) || 0)))
+            : new Array(60).fill(0);
+        
+        const gritObj: Record<string, number> = {};
+        if (typeof grit_answers === 'object' && grit_answers !== null) {
+            for (let i = 1; i <= 12; i++) {
+                const key = i.toString();
+                const value = (grit_answers as any)[i] || (grit_answers as any)[key] || 3;
+                gritObj[key] = Math.max(1, Math.min(5, Number(value)));
+            }
+        } else {
+            for (let i = 1; i <= 12; i++) {
+                gritObj[i.toString()] = 3;
+            }
         }
-
-        return await response.json();
+        
+        const riasecObj: Record<string, number> = {};
+        if (typeof riasec_answers === 'object' && riasec_answers !== null) {
+            for (let i = 1; i <= 48; i++) {
+                const key = i.toString();
+                const value = (riasec_answers as any)[i] || (riasec_answers as any)[key];
+                if (typeof value === 'boolean') {
+                    riasecObj[key] = value ? 5 : 1;
+                } else {
+                    riasecObj[key] = Math.max(1, Math.min(5, Number(value) || 3));
+                }
+            }
+        } else {
+            for (let i = 1; i <= 48; i++) {
+                riasecObj[i.toString()] = 3;
+            }
+        }
+        
+        return await callCareerAssessment({
+            mbti_answers: mbtiArray,
+            grit_answers: gritObj,
+            riasec_answers: riasecObj,
+            top_n: 10,
+            min_match_score: 50.0
+        });
     } catch (error) {
         console.error('AI API Error:', error);
         return {success: false, error: 'AI API unavailable'};

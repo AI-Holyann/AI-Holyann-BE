@@ -1,8 +1,6 @@
 import {NextRequest, NextResponse} from 'next/server';
 import {prisma} from '@/lib/prisma';
 
-const AI_SERVER_URL = process.env.AI_SERVER_URL || 'http://127.0.0.1:8000';
-
 /**
  * POST /api/ai/predict-mbti
  * Call AI model to predict MBTI and update database
@@ -41,10 +39,16 @@ export async function POST(request: NextRequest) {
             }, {status: 400});
         }
 
+        // Convert Prisma.JsonArray to number[]
+        const mbtiAnswersArray: number[] = test.answers.map((val: any) => {
+            const num = Number(val);
+            return isNaN(num) ? 0 : Math.max(-3, Math.min(3, num));
+        });
+
         // Prepare data for AI server
         // Note: We need to send dummy GRIT and RIASEC data since AI expects all three
         const aiPayload = {
-            mbti_answers: test.answers,
+            mbti_answers: mbtiAnswersArray,
             grit_answers: Object.fromEntries(Array.from({length: 12}, (_, i) => [i + 1, 3])),
             riasec_answers: Object.fromEntries(Array.from({length: 48}, (_, i) => [i + 1, 3])),
             top_n: 0, // We don't need career recommendations
@@ -53,26 +57,20 @@ export async function POST(request: NextRequest) {
 
         console.log('📤 [AI Predict MBTI] Calling AI server...');
 
-        // Call AI server
-        const aiResponse = await fetch(`${AI_SERVER_URL}/hoexapp/api/career-assessment/`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(aiPayload)
-        });
-
-        if (!aiResponse.ok) {
-            const errorText = await aiResponse.text();
-            console.error('❌ [AI Predict MBTI] AI server error:', errorText);
+        // Call AI server using centralized client
+        const { callCareerAssessment } = await import('@/lib/ai-api-client');
+        
+        let aiResult;
+        try {
+            aiResult = await callCareerAssessment(aiPayload);
+        } catch (error: any) {
+            console.error('❌ [AI Predict MBTI] AI server error:', error);
             return NextResponse.json({
                 success: false,
                 error: 'AI server error',
-                details: errorText
+                details: error.message || 'Unknown error'
             }, {status: 500});
         }
-
-        const aiResult = await aiResponse.json();
 
         if (!aiResult.success || !aiResult.assessment?.mbti) {
             return NextResponse.json({

@@ -1,9 +1,4 @@
 import {NextRequest, NextResponse} from 'next/server'
-import http from 'http'
-
-// Force Node.js runtime to allow localhost connections
-export const runtime = 'nodejs'
-export const dynamic = 'force-dynamic'
 
 // Types for external API
 interface ExternalCareerAssessmentRequest {
@@ -97,70 +92,17 @@ export async function POST(request: NextRequest) {
             riasec_count: Object.keys(externalRequest.riasec_answers).length
         })
 
-        // Call Django API using native http module
-        const djangoHost = '127.0.0.1'
-        const djangoPort = 8000
-        const djangoPath = '/hoexapp/api/career-assessment/'
+        // Call AI API using centralized client
+        const { callCareerAssessment } = await import('@/lib/ai-api-client')
         
-        console.log(`🤖 [Career Assessment] Calling Django at http://${djangoHost}:${djangoPort}${djangoPath}`)
-
         let externalResult: ExternalCareerAssessmentResponse;
         try {
-            externalResult = await new Promise((resolve, reject) => {
-                const postData = JSON.stringify(externalRequest)
-                
-                const options = {
-                    hostname: djangoHost,
-                    port: djangoPort,
-                    path: djangoPath,
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Content-Length': Buffer.byteLength(postData)
-                    },
-                    timeout: 30000 // 30 seconds
-                }
-
-                const req = http.request(options, (res) => {
-                    let data = ''
-                    
-                    res.on('data', (chunk) => {
-                        data += chunk
-                    })
-                    
-                    res.on('end', () => {
-                        console.log(`✅ [Career Assessment] Django response status: ${res.statusCode}`)
-                        
-                        if (res.statusCode === 200) {
-                            try {
-                                resolve(JSON.parse(data))
-                            } catch (e) {
-                                reject(new Error(`Failed to parse response: ${data}`))
-                            }
-                        } else {
-                            reject(new Error(`Django API error: ${res.statusCode} - ${data}`))
-                        }
-                    })
-                })
-
-                req.on('error', (error) => {
-                    console.error('❌ [Career Assessment] HTTP request error:', error)
-                    reject(error)
-                })
-
-                req.on('timeout', () => {
-                    req.destroy()
-                    reject(new Error('Request timeout'))
-                })
-
-                req.write(postData)
-                req.end()
-            })
+            externalResult = await callCareerAssessment(externalRequest)
         } catch (error) {
-            console.error('❌ [Career Assessment] Failed to call Django:', error)
+            console.error('❌ [Career Assessment] Failed to call AI API:', error)
             return NextResponse.json({
                 success: false,
-                error: 'Cannot connect to AI server. Make sure Django server is running at http://127.0.0.1:8000',
+                error: 'Cannot connect to AI server. Make sure Django server is running.',
                 details: error instanceof Error ? error.message : String(error)
             }, {status: 503})
         }
