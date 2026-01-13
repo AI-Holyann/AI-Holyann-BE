@@ -67,7 +67,7 @@ export const authOptions: NextAuthOptions = {
                 token.accessToken = user.accessToken
                 token.role = user.role
                 token.id = user.id
-                token.full_name = user.name
+                token.full_name = user.name || undefined
             }
             return token
         },

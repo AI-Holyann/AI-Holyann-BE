@@ -1,3 +1,5 @@
+'use client'
+
 import CareerAssessmentResults from '@/components/CareerAssessmentResults'
 
 console.log('CareerAssessmentResults imported successfully:', CareerAssessmentResults)

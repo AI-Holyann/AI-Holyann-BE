@@ -74,28 +74,28 @@ export const GRIT_QUESTIONS_LEGACY: Question[] = [
         id: 101,
         type: 'GRIT',
         text: "Tôi thường hoàn thành những gì mình đã bắt đầu.",
-        reverseScore: false
+        reverse: false
     },
     {
         id: 102,
         type: 'GRIT',
         text: "Đôi khi các ý tưởng và dự án mới khiến tôi xao lãng và không còn chú ý đến những ý tưởng trước đó.",
-        reverseScore: true
+        reverse: true
     },
-    {id: 103, type: 'GRIT', text: "Những điều tôi quan tâm thay đổi qua từng năm.", reverseScore: true},
-    {id: 104, type: 'GRIT', text: "Tôi không nản lòng trước những khó khăn.", reverseScore: false},
+    {id: 103, type: 'GRIT', text: "Những điều tôi quan tâm thay đổi qua từng năm.", reverse: true},
+    {id: 104, type: 'GRIT', text: "Tôi không nản lòng trước những khó khăn.", reverse: false},
     {
         id: 105,
         type: 'GRIT',
         text: "Tôi bị cuốn hút bởi một ý tưởng hoặc dự án nào đó trong một thời gian ngắn, rồi tôi lại dần mất đi hứng thú.",
-        reverseScore: true
+        reverse: true
     },
-    {id: 106, type: 'GRIT', text: "Tôi là người chăm chỉ.", reverseScore: false},
+    {id: 106, type: 'GRIT', text: "Tôi là người chăm chỉ.", reverse: false},
     {
         id: 107,
         type: 'GRIT',
         text: "Tôi thường lập mục tiêu này nhưng rồi lại chọn theo đuổi mục tiêu khác.",
-        reverseScore: true
+        reverse: true
     },
 ];
 

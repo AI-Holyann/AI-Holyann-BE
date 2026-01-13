@@ -176,13 +176,13 @@ export async function POST(
 
       language_and_standardized: {
         // Languages from academic profile
-        languages: (academicProfile?.english_certificates || []).map((l: any) => ({
+        languages: (Array.isArray(academicProfile?.english_certificates) ? academicProfile.english_certificates : []).map((l: any) => ({
           language_name: l.type,
           score: l.score,
         })),
 
         // Standardized tests
-        standardized_tests: (academicProfile?.standardized_tests || []).map((t: any) => ({
+        standardized_tests: (Array.isArray(academicProfile?.standardized_tests) ? academicProfile.standardized_tests : []).map((t: any) => ({
           test_name: t.type,
           score: t.score,
         })),

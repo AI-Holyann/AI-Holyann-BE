@@ -112,10 +112,10 @@ export interface TestQuestion {
     id: string;
     question: string;
     reverse?: boolean; // true = reverse score (6 - answer)
-
+}
 
 // Specific test question types with id field
-    // For MBTI (Legacy - A/B options)
+// For MBTI (Legacy - A/B options)
 export interface MBTIQuestion {
     id: number;
     type: TestType;

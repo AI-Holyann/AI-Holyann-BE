@@ -2,6 +2,7 @@
  * Service để quản lý Student Background và các dữ liệu ngoại khóa
  */
 
+import { randomUUID } from 'crypto';
 import { prisma } from '../prisma';
 import type {
   AcademicAward,
@@ -90,6 +91,7 @@ export async function addAcademicAward(
 
   return await prisma.academic_awards.create({
     data: {
+      id: randomUUID(),
       background_id: studentId,
       ...data,
     },
@@ -146,6 +148,7 @@ export async function addNonAcademicAward(
 
   return await prisma.non_academic_awards.create({
     data: {
+      id: randomUUID(),
       background_id: studentId,
       ...data,
     },
@@ -202,6 +205,7 @@ export async function addAcademicExtracurricular(
 
   return await prisma.academic_extracurriculars.create({
     data: {
+      id: randomUUID(),
       background_id: studentId,
       ...data,
     },
@@ -258,6 +262,7 @@ export async function addNonAcademicExtracurricular(
 
   return await prisma.non_academic_extracurriculars.create({
     data: {
+      id: randomUUID(),
       background_id: studentId,
       ...data,
     },
@@ -322,6 +327,7 @@ export async function addWorkExperience(
 
   return await prisma.work_experiences.create({
     data: {
+      id: randomUUID(),
       background_id: studentId,
       ...data,
     },
@@ -399,6 +405,7 @@ export async function addResearchExperience(
 
   return await prisma.research_experiences.create({
     data: {
+      id: randomUUID(),
       background_id: studentId,
       ...data,
     },
@@ -464,12 +471,24 @@ export async function createStudentBackgroundWithData(
   return await prisma.student_backgrounds.create({
     data: {
       student_id: studentId,
-      academic_awards: data.academic_awards ? { create: data.academic_awards } : undefined,
-      non_academic_awards: data.non_academic_awards ? { create: data.non_academic_awards } : undefined,
-      academic_extracurriculars: data.academic_extracurriculars ? { create: data.academic_extracurriculars } : undefined,
-      non_academic_extracurriculars: data.non_academic_extracurriculars ? { create: data.non_academic_extracurriculars } : undefined,
-      work_experiences: data.work_experiences ? { create: data.work_experiences } : undefined,
-      research_experiences: data.research_experiences ? { create: data.research_experiences } : undefined,
+      academic_awards: data.academic_awards ? { 
+        create: data.academic_awards.map(award => ({ ...award, id: randomUUID() })) 
+      } : undefined,
+      non_academic_awards: data.non_academic_awards ? { 
+        create: data.non_academic_awards.map(award => ({ ...award, id: randomUUID() })) 
+      } : undefined,
+      academic_extracurriculars: data.academic_extracurriculars ? { 
+        create: data.academic_extracurriculars.map(activity => ({ ...activity, id: randomUUID() })) 
+      } : undefined,
+      non_academic_extracurriculars: data.non_academic_extracurriculars ? { 
+        create: data.non_academic_extracurriculars.map(activity => ({ ...activity, id: randomUUID() })) 
+      } : undefined,
+      work_experiences: data.work_experiences ? { 
+        create: data.work_experiences.map(work => ({ ...work, id: randomUUID() })) 
+      } : undefined,
+      research_experiences: data.research_experiences ? { 
+        create: data.research_experiences.map(research => ({ ...research, id: randomUUID() })) 
+      } : undefined,
     },
     include: {
       academic_awards: true,

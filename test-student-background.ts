@@ -3,6 +3,7 @@
  * Chạy script này để test các functions
  */
 
+import { randomUUID } from 'crypto';
 import { prisma } from './src/lib/prisma';
 import * as BackgroundService from './src/lib/services/student-background.service';
 
@@ -14,6 +15,7 @@ async function testStudentBackgroundSystem() {
     console.log('1️⃣ Tạo test user...');
     const testUser = await prisma.users.create({
       data: {
+        id: randomUUID(),
         full_name: 'Nguyen Van Test',
         email: `test${Date.now()}@example.com`,
         role: 'STUDENT',
@@ -38,7 +40,7 @@ async function testStudentBackgroundSystem() {
     const award1 = await BackgroundService.addAcademicAward(student.user_id, {
       award_name: 'Giải Nhất Olympic Toán Quốc gia',
       issuing_organization: 'Bộ Giáo dục và Đào tạo',
-      award_level: 'Quốc gia',
+      award_level: 'NATIONAL',
       award_date: new Date('2024-05-15'),
       description: 'Đạt giải Nhất Olympic Toán học cấp Quốc gia năm 2024',
     });
@@ -48,9 +50,9 @@ async function testStudentBackgroundSystem() {
     console.log('\n4️⃣ Thêm giải thưởng nghệ thuật...');
     const award2 = await BackgroundService.addNonAcademicAward(student.user_id, {
       award_name: 'Huy chương Vàng Piano',
-      category: 'Âm nhạc',
+      category: 'MUSIC',
       issuing_organization: 'Conservatory of Music',
-      award_level: 'Quốc tế',
+      award_level: 'INTERNATIONAL',
       award_date: new Date('2024-03-20'),
       description: 'Giải vàng cuộc thi Piano quốc tế',
     });
@@ -76,7 +78,7 @@ async function testStudentBackgroundSystem() {
     console.log('\n6️⃣ Thêm hoạt động tình nguyện...');
     const activity2 = await BackgroundService.addNonAcademicExtracurricular(student.user_id, {
       activity_name: 'Dạy học cho trẻ em vùng cao',
-      category: 'Cộng đồng',
+      category: 'COMMUNITY',
       organization: 'Nhóm tình nguyện ABC',
       role: 'Tình nguyện viên',
       start_date: new Date('2023-06-01'),
@@ -93,7 +95,7 @@ async function testStudentBackgroundSystem() {
     const work = await BackgroundService.addWorkExperience(student.user_id, {
       company_name: 'Tech Startup XYZ',
       job_title: 'Software Engineer Intern',
-      employment_type: 'Internship',
+      employment_type: 'INTERNSHIP',
       location: 'Ho Chi Minh City',
       start_date: new Date('2024-06-01'),
       end_date: new Date('2024-08-31'),

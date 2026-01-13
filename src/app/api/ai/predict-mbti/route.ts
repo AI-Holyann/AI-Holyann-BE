@@ -33,7 +33,8 @@ export async function POST(request: NextRequest) {
             }, {status: 404});
         }
 
-        if (!test.answers || test.answers.length !== 60) {
+        // Type check and validate answers
+        if (!test.answers || !Array.isArray(test.answers) || test.answers.length !== 60) {
             return NextResponse.json({
                 success: false,
                 error: 'Invalid test data: missing or incomplete answers'

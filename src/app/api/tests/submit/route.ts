@@ -46,9 +46,14 @@ export async function POST(request: NextRequest) {
             case 'grit':
                 result = await submitGritTest(test_id, student_id, answers);
                 break;
+            default:
+                return NextResponse.json({
+                    success: false,
+                    error: `Invalid test type: ${test_type}`
+                }, {status: 400});
         }
 
-        if (!result.success) {
+        if (!result || !result.success) {
             return NextResponse.json(result, {status: 400});
         }
 

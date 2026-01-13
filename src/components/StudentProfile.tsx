@@ -387,7 +387,6 @@ export default function StudentProfile({ studentId }: StudentProfileProps) {
                         setUploadMode(null);
                         fetchProfile();
                     }}
-                    initialData={profile}
                 />
             )}
         </div>

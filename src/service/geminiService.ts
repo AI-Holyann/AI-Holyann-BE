@@ -204,7 +204,7 @@ export const getMajorRecommendations = async (
         const recommendations = JSON.parse(jsonText) as MajorRecommendation[];
 
         // Sort by matchPercentage descending
-        return recommendations.sort((a, b) => b.matchPercentage - a.matchPercentage);
+        return recommendations.sort((a, b) => (b.matchPercentage || 0) - (a.matchPercentage || 0));
 
     } catch (error) {
         console.error("Error fetching major recommendations from Gemini:", error);
