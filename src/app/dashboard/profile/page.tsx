@@ -1,6 +1,6 @@
 'use client';
 
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useMemo} from 'react';
 import {ProfilePage} from '@/components/dashboard/Profile/ProfilePage';
 import AcademicInfoModal from '@/components/AcademicInfoModal';
 import ProfileAnalysisModal from '@/components/ProfileAnalysisModal';
@@ -18,8 +18,8 @@ export default function ProfilePageWrapper() {
     const [analysisResult, setAnalysisResult] = useState<any>(null);
     const [analysisLoading, setAnalysisLoading] = useState(false);
 
-    // Get student ID from session
-    const getStudentId = (): string | null => {
+    // Get student ID from session - memoized to prevent unnecessary recalculations
+    const studentId = useMemo(() => {
         // Try NextAuth session first
         const sessionUserId = (session?.user as any)?.id || (session?.user as any)?.user_id;
         if (sessionUserId) {
@@ -41,18 +41,33 @@ export default function ProfilePageWrapper() {
         }
 
         return null;
+    }, [session?.user]);
+
+    // Get student ID from session (for use in handlers)
+    const getStudentId = (): string | null => {
+        return studentId;
     };
 
     // Fetch profile data from API
     useEffect(() => {
+        // Skip if session is still loading
+        if (session === undefined) {
+            return;
+        }
+
+        // Skip if no studentId
+        if (!studentId) {
+            setError('Không tìm thấy thông tin học sinh. Vui lòng đăng nhập lại.');
+            setLoading(false);
+            return;
+        }
+
+        // Skip if already loaded
+        if (profile && !loading) {
+            return;
+        }
+
         const fetchProfile = async () => {
-            const studentId = getStudentId();
-            
-            if (!studentId) {
-                setError('Không tìm thấy thông tin học sinh. Vui lòng đăng nhập lại.');
-                setLoading(false);
-                return;
-            }
 
             try {
                 setLoading(true);
@@ -143,10 +158,8 @@ export default function ProfilePageWrapper() {
             }
         };
 
-        if (session !== undefined) {
-            fetchProfile();
-        }
-    }, [session]);
+        fetchProfile();
+    }, [studentId]);
 
     const handleEditClick = () => {
         setIsModalOpen(true);
@@ -266,7 +279,7 @@ export default function ProfilePageWrapper() {
         return (
             <>
                 <AuthHeader/>
-                <main className="min-h-screen bg-white dark:bg-gray-900">
+                <main className="min-h-screen bg-white dark:bg-slate-900">
                     <div className="flex justify-center items-center h-screen">
                         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
                     </div>
@@ -280,7 +293,7 @@ export default function ProfilePageWrapper() {
         return (
             <>
                 <AuthHeader/>
-                <main className="min-h-screen bg-white dark:bg-gray-900">
+                <main className="min-h-screen bg-white dark:bg-slate-900">
                     <div className="flex flex-col justify-center items-center h-screen">
                         <div className="text-red-600 text-xl mb-4">{error || 'Không tìm thấy thông tin học sinh'}</div>
                         <button 

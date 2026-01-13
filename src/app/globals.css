@@ -152,6 +152,10 @@
     @apply border-border outline-ring/50;
   }
 
+  html {
+    scroll-behavior: smooth;
+  }
+
   body {
     @apply bg-background text-foreground font-sans transition-colors duration-300;
   }
@@ -166,6 +170,37 @@
     @apply font-heading font-bold;
     /* Ở Light mode là màu xanh đậm, Dark mode tự động chuyển theo biến --foreground hoặc --primary */
     @apply text-primary dark:text-foreground;
+  }
+
+  /* Custom Scrollbar Styles - Global */
+  /* Webkit browsers (Chrome, Safari, Edge) */
+  *::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  *::-webkit-scrollbar-track {
+    @apply bg-gray-100 dark:bg-slate-800 rounded-full;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    @apply bg-gradient-to-b from-blue-500 to-blue-600 dark:from-blue-400 dark:to-blue-500 rounded-full;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    @apply from-blue-600 to-blue-700 dark:from-blue-500 dark:to-blue-600;
+  }
+
+  /* Firefox */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(59 130 246) rgb(243 244 246); /* blue-500 / gray-100 */
+  }
+
+  .dark * {
+    scrollbar-color: rgb(96 165 250) rgb(30 41 59); /* blue-400 / slate-800 */
   }
 }
 

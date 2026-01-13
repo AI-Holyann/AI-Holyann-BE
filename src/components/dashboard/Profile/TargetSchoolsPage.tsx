@@ -191,13 +191,13 @@ const getDeadlineBadgeColor = (type: DeadlineType['type']) => {
     switch (type) {
         case 'ED':
         case 'ED2':
-            return 'bg-red-100 text-red-700 border-red-300';
+            return 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 border-red-300 dark:border-red-800';
         case 'EA':
-            return 'bg-orange-100 text-orange-700 border-orange-300';
+            return 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 border-orange-300 dark:border-orange-800';
         case 'RD':
-            return 'bg-blue-100 text-blue-700 border-blue-300';
+            return 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border-blue-300 dark:border-blue-800';
         default:
-            return 'bg-gray-100 text-gray-700 border-gray-300';
+            return 'bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-slate-300 border-gray-300 dark:border-slate-600';
     }
 };
 
@@ -205,13 +205,13 @@ const getDeadlineBadgeColor = (type: DeadlineType['type']) => {
 const getStatusBadgeColor = (status?: School['status']) => {
     switch (status) {
         case 'Đang tìm hiểu':
-            return 'bg-yellow-100 text-yellow-700 border-yellow-300';
+            return 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 border-yellow-300 dark:border-yellow-800';
         case 'Đang viết luận':
-            return 'bg-blue-100 text-blue-700 border-blue-300';
+            return 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border-blue-300 dark:border-blue-800';
         case 'Đã nộp':
-            return 'bg-green-100 text-green-700 border-green-300';
+            return 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border-green-300 dark:border-green-800';
         default:
-            return 'bg-gray-100 text-gray-700 border-gray-300';
+            return 'bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-slate-300 border-gray-300 dark:border-slate-600';
     }
 };
 
@@ -262,7 +262,7 @@ const SchoolCategorySection: React.FC<{ category: School['category'] }> = ({cate
     const IconComponent = config.icon;
 
     return (
-        <div className={`bg-white rounded-2xl shadow-sm border-2 ${config.borderColor} overflow-hidden`}>
+        <div className={`bg-white dark:bg-slate-800 rounded-2xl shadow-sm border-2 ${config.borderColor} dark:border-slate-700 overflow-hidden`}>
             {/* Section Header */}
             <div
                 className={`bg-gradient-to-r ${config.color} px-6 py-4 cursor-pointer hover:opacity-90 transition-opacity`}
@@ -297,29 +297,29 @@ const SchoolCategorySection: React.FC<{ category: School['category'] }> = ({cate
                 <div className="overflow-x-auto">
                     <table className="w-full">
                         <thead>
-                        <tr className={`${config.bgColor} border-b-2 ${config.borderColor}`}>
-                            <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                        <tr className={`${config.bgColor} dark:bg-slate-900 border-b-2 ${config.borderColor} dark:border-slate-700`}>
+                            <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 dark:text-slate-300 uppercase tracking-wider">
                                 Trường
                             </th>
-                            <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                            <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 dark:text-slate-300 uppercase tracking-wider">
                                 Hạn Nộp
                             </th>
-                            <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                            <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 dark:text-slate-300 uppercase tracking-wider">
                                 Học Bổng
                             </th>
-                            <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                            <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 dark:text-slate-300 uppercase tracking-wider">
                                 Yêu Cầu
                             </th>
-                            <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                            <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 dark:text-slate-300 uppercase tracking-wider">
                                 Trạng Thái
                             </th>
                         </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-200">
+                        <tbody className="divide-y divide-gray-200 dark:divide-slate-700">
                         {schools.map((school) => (
                             <tr
                                 key={school.id}
-                                className={`hover:bg-gray-50 transition-colors ${school.isHighlight ? 'bg-green-50/50' : ''}`}
+                                className={`hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors ${school.isHighlight ? 'bg-green-50/50 dark:bg-green-900/20' : ''}`}
                             >
                                 {/* School Info */}
                                 <td className="px-6 py-4">
@@ -329,13 +329,13 @@ const SchoolCategorySection: React.FC<{ category: School['category'] }> = ({cate
                                             <GraduationCap className={config.iconColor} size={20}/>
                                         </div>
                                         <div>
-                                            <p className="font-bold text-gray-900 text-sm mb-1">{school.name}</p>
+                                            <p className="font-bold text-gray-900 dark:text-white text-sm mb-1">{school.name}</p>
                                             <div className="flex items-center gap-2">
                           <span
-                              className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold ${config.iconBg} ${config.iconColor}`}>
+                              className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold ${config.iconBg} dark:bg-slate-700 ${config.iconColor} dark:text-slate-300`}>
                             {school.rank}
                           </span>
-                                                <span className="flex items-center gap-1 text-xs text-gray-500">
+                                                <span className="flex items-center gap-1 text-xs text-gray-500 dark:text-slate-400">
                             <MapPin size={12}/>
                                                     {school.location}
                           </span>
@@ -364,24 +364,24 @@ const SchoolCategorySection: React.FC<{ category: School['category'] }> = ({cate
                                     {school.scholarshipDeadline ? (
                                         <div className="flex items-center gap-2">
                                             <div
-                                                className="w-8 h-8 rounded-lg bg-yellow-100 flex items-center justify-center">
-                                                <DollarSign className="text-yellow-600" size={16}/>
+                                                className="w-8 h-8 rounded-lg bg-yellow-100 dark:bg-yellow-900/30 flex items-center justify-center">
+                                                <DollarSign className="text-yellow-600 dark:text-yellow-400" size={16}/>
                                             </div>
                                             <div>
-                                                <p className="text-xs font-semibold text-yellow-700">Full-Ride</p>
-                                                <p className="text-xs text-gray-600">{school.scholarshipDeadline}</p>
+                                                <p className="text-xs font-semibold text-yellow-700 dark:text-yellow-300">Full-Ride</p>
+                                                <p className="text-xs text-gray-600 dark:text-slate-400">{school.scholarshipDeadline}</p>
                                             </div>
                                         </div>
                                     ) : (
-                                        <span className="text-xs text-gray-400 italic">Không có</span>
+                                        <span className="text-xs text-gray-400 dark:text-slate-500 italic">Không có</span>
                                     )}
                                 </td>
 
                                 {/* Requirements */}
                                 <td className="px-6 py-4">
                                     <div className="flex items-start gap-2">
-                                        <FileText className="text-gray-400 flex-shrink-0 mt-0.5" size={14}/>
-                                        <p className="text-sm text-gray-600 leading-relaxed">{school.requirements}</p>
+                                        <FileText className="text-gray-400 dark:text-slate-500 flex-shrink-0 mt-0.5" size={14}/>
+                                        <p className="text-sm text-gray-600 dark:text-slate-300 leading-relaxed">{school.requirements}</p>
                                     </div>
                                 </td>
 
@@ -428,12 +428,12 @@ export const TargetSchoolsPage: React.FC = () => {
     ];
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30">
+        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30 dark:from-slate-900 dark:to-slate-800">
             <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
                 {/* NAVIGATION TABS */}
                 <div className="mb-6">
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-2">
+                    <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-2">
                         <div className="flex items-center gap-2">
                             {navigationItems.map((item) => {
                                 const IconComponent = item.icon;
@@ -446,7 +446,7 @@ export const TargetSchoolsPage: React.FC = () => {
                                             flex items-center gap-2 px-4 py-2.5 rounded-lg font-semibold text-sm transition-all duration-200
                                             ${isActive
                                             ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md'
-                                            : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                                            : 'text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700 hover:text-gray-900 dark:hover:text-white'
                                         }
                                         `}
                                     >
@@ -467,8 +467,8 @@ export const TargetSchoolsPage: React.FC = () => {
                             <GraduationCap className="text-white" size={28}/>
                         </div>
                         <div>
-                            <h1 className="text-4xl font-bold text-gray-900">Danh Sách Trường Mục Tiêu</h1>
-                            <p className="text-gray-600 mt-1">
+                            <h1 className="text-4xl font-bold text-gray-900 dark:text-white">Danh Sách Trường Mục Tiêu</h1>
+                            <p className="text-gray-600 dark:text-slate-400 mt-1">
                                 Quản lý và theo dõi tiến độ hồ sơ du học của bạn
                             </p>
                         </div>
@@ -476,65 +476,65 @@ export const TargetSchoolsPage: React.FC = () => {
 
                     {/* Summary Cards */}
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+                        <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-5">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <p className="text-sm font-medium text-gray-500 mb-1">Tổng số trường</p>
-                                    <p className="text-3xl font-bold text-gray-900">{totalCount}</p>
+                                    <p className="text-sm font-medium text-gray-500 dark:text-slate-400 mb-1">Tổng số trường</p>
+                                    <p className="text-3xl font-bold text-gray-900 dark:text-white">{totalCount}</p>
                                 </div>
-                                <div className="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center">
-                                    <Award className="text-gray-600" size={24}/>
+                                <div className="w-12 h-12 rounded-xl bg-gray-100 dark:bg-slate-700 flex items-center justify-center">
+                                    <Award className="text-gray-600 dark:text-slate-300" size={24}/>
                                 </div>
                             </div>
                         </div>
 
                         <div
-                            className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl shadow-sm border border-purple-200 p-5">
+                            className="bg-gradient-to-br from-purple-50 dark:from-purple-900/20 to-pink-50 dark:to-pink-900/20 rounded-xl shadow-sm border border-purple-200 dark:border-purple-800 p-5">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <p className="text-sm font-medium text-purple-600 mb-1">Dream</p>
-                                    <p className="text-3xl font-bold text-purple-900">{dreamCount}</p>
+                                    <p className="text-sm font-medium text-purple-600 dark:text-purple-400 mb-1">Dream</p>
+                                    <p className="text-3xl font-bold text-purple-900 dark:text-purple-300">{dreamCount}</p>
                                 </div>
-                                <div className="w-12 h-12 rounded-xl bg-purple-100 flex items-center justify-center">
-                                    <Star className="text-purple-600" size={24}/>
+                                <div className="w-12 h-12 rounded-xl bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
+                                    <Star className="text-purple-600 dark:text-purple-400" size={24}/>
                                 </div>
                             </div>
                         </div>
 
                         <div
-                            className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl shadow-sm border border-blue-200 p-5">
+                            className="bg-gradient-to-br from-blue-50 dark:from-blue-900/20 to-cyan-50 dark:to-cyan-900/20 rounded-xl shadow-sm border border-blue-200 dark:border-blue-800 p-5">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <p className="text-sm font-medium text-blue-600 mb-1">Match</p>
-                                    <p className="text-3xl font-bold text-blue-900">{matchCount}</p>
+                                    <p className="text-sm font-medium text-blue-600 dark:text-blue-400 mb-1">Match</p>
+                                    <p className="text-3xl font-bold text-blue-900 dark:text-blue-300">{matchCount}</p>
                                 </div>
-                                <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center">
-                                    <Target className="text-blue-600" size={24}/>
+                                <div className="w-12 h-12 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                                    <Target className="text-blue-600 dark:text-blue-400" size={24}/>
                                 </div>
                             </div>
                         </div>
 
                         <div
-                            className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl shadow-sm border border-green-200 p-5">
+                            className="bg-gradient-to-br from-green-50 dark:from-green-900/20 to-emerald-50 dark:to-emerald-900/20 rounded-xl shadow-sm border border-green-200 dark:border-green-800 p-5">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <p className="text-sm font-medium text-green-600 mb-1">Safety</p>
-                                    <p className="text-3xl font-bold text-green-900">{safetyCount}</p>
+                                    <p className="text-sm font-medium text-green-600 dark:text-green-400 mb-1">Safety</p>
+                                    <p className="text-3xl font-bold text-green-900 dark:text-green-300">{safetyCount}</p>
                                 </div>
-                                <div className="w-12 h-12 rounded-xl bg-green-100 flex items-center justify-center">
-                                    <Shield className="text-green-600" size={24}/>
+                                <div className="w-12 h-12 rounded-xl bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                                    <Shield className="text-green-600 dark:text-green-400" size={24}/>
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     {/* Info Banner */}
-                    <div className="mt-6 bg-blue-50 border-l-4 border-blue-500 rounded-lg p-4">
+                    <div className="mt-6 bg-blue-50 dark:bg-blue-900/30 border-l-4 border-blue-500 dark:border-blue-400 rounded-lg p-4">
                         <div className="flex items-start gap-3">
-                            <AlertCircle className="text-blue-600 flex-shrink-0 mt-0.5" size={20}/>
+                            <AlertCircle className="text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" size={20}/>
                             <div>
-                                <p className="text-sm font-semibold text-blue-900 mb-1">Lời khuyên về phân bổ trường</p>
-                                <p className="text-sm text-blue-700">
+                                <p className="text-sm font-semibold text-blue-900 dark:text-blue-300 mb-1">Lời khuyên về phân bổ trường</p>
+                                <p className="text-sm text-blue-700 dark:text-blue-200">
                                     Chiến lược tối ưu: <span className="font-semibold">3-4 Dream</span> (reach schools),
                                     <span className="font-semibold"> 4-5 Match</span> (target schools),
                                     <span className="font-semibold"> 2-3 Safety</span> (safety schools).
@@ -554,7 +554,7 @@ export const TargetSchoolsPage: React.FC = () => {
 
                 {/* Footer Note */}
                 <div className="mt-8 text-center">
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-gray-500 dark:text-slate-400">
                         💡 Tip: Nhấn vào tên trường để xem chi tiết và cập nhật trạng thái ứng tuyển
                     </p>
                 </div>
