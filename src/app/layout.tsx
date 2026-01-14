@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { AuthProvider as OldAuthProvider } from "../contexts/AuthContext";
 import AuthProvider from "@/components/auth/AuthProvider";
+import { ToasterProvider } from "@/components/ToasterProvider";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -135,6 +136,7 @@ export default function RootLayout({
         <AuthProvider>
           <OldAuthProvider>{children}</OldAuthProvider>
         </AuthProvider>
+        <ToasterProvider />
       </body>
     </html>
   );

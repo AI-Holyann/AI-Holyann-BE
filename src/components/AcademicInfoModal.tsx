@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -265,6 +266,10 @@ export default function AcademicInfoModal({ studentId, onClose }: AcademicInfoMo
 
     const handleSaveAll = async () => {
         setSaving(true);
+        toast.info('Đang lưu thông tin hồ sơ', {
+            description: 'Vui lòng đợi trong giây lát...',
+        });
+        
         try {
             // Save Basic Info & Goals
             await fetch(`/api/students/${studentId}/profile`, {
@@ -409,11 +414,19 @@ export default function AcademicInfoModal({ studentId, onClose }: AcademicInfoMo
                 });
             }
 
-            alert('Lưu thông tin thành công!');
-            window.location.reload();
+            toast.success('Lưu thông tin thành công', {
+                description: 'Tất cả thông tin hồ sơ đã được cập nhật',
+            });
+            
+            // Delay reload để người dùng thấy toast
+            setTimeout(() => {
+                window.location.reload();
+            }, 1500);
         } catch (error) {
             console.error('Error saving data:', error);
-            alert('Có lỗi xảy ra khi lưu thông tin');
+            toast.error('Có lỗi xảy ra khi lưu thông tin', {
+                description: 'Vui lòng thử lại sau hoặc liên hệ hỗ trợ',
+            });
         } finally {
             setSaving(false);
         }

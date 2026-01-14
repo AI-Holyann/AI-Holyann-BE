@@ -59,55 +59,20 @@ export async function POST(request: NextRequest) {
                     console.log('✅ Found student in Supabase:', student_id);
                 }
             } catch (supabaseError: any) {
-                console.log('📝 Student not found in either DB, will create new one');
+                console.error('❌ Student not found in Supabase:', supabaseError.message);
             }
         }
 
-        // 3. Nếu vẫn không tìm thấy, tạo mới
+        // 3. Nếu vẫn không tìm thấy, trả về lỗi rõ ràng
+        // Student profile should be created automatically during registration
+        // If missing, it's a data sync issue that needs to be fixed
         if (!student) {
-            console.log('🔧 Creating new student profile for:', student_id);
-
-            const studentData = {
-                user_id: student_id,
-                created_at: new Date().toISOString(),
-                updated_at: new Date().toISOString(),
-                assessments_completed: false
-            };
-
-            // Tạo trong Supabase trước (primary source)
-            try {
-                const {data: newSupabaseStudent, error: supabaseError} = await supabaseAdmin
-                    .from('students')
-                    .insert(studentData)
-                    .select()
-                    .single();
-
-                if (supabaseError) throw supabaseError;
-                student = newSupabaseStudent;
-                console.log('✅ Student created in Supabase');
-            } catch (supabaseCreateError: any) {
-                console.error('❌ Failed to create student in Supabase:', supabaseCreateError.message);
-                return NextResponse.json({
-                    success: false,
-                    error: 'Failed to create student profile: ' + supabaseCreateError.message
-                }, {status: 500});
-            }
-
-            // Thử tạo trong Prisma Local DB (best effort)
-            try {
-                await prisma.students.create({
-                    data: {
-                        user_id: student_id,
-                        created_at: new Date(),
-                        updated_at: new Date(),
-                        assessments_completed: false
-                    }
-                });
-                console.log('✅ Student also created in Local DB');
-            } catch (prismaCreateError: any) {
-                console.warn('⚠️ Could not create in Local DB (but Supabase OK):', prismaCreateError.message);
-                // Continue - Supabase is working
-            }
+            console.error('❌ Student profile not found for user_id:', student_id);
+            return NextResponse.json({
+                success: false,
+                error: 'Student profile not found. Please ensure your account is properly set up. If you just registered, please try logging out and back in.',
+                error_code: 'STUDENT_PROFILE_MISSING'
+            }, {status: 404});
         }
 
         // Kiểm tra test đang dở

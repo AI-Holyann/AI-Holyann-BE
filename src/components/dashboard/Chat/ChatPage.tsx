@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
+import { toast } from "sonner";
 import { Conversation, Message } from "./types";
 import { CONVERSATIONS } from "./data";
 import { ConversationList } from "./ConversationList";
@@ -22,30 +23,48 @@ export const ChatPage: React.FC = () => {
   const messagesContainerRef = useRef<HTMLDivElement>(null);
 
   const handleSendMessage = () => {
-    if (!messageInput.trim()) return;
+    if (!messageInput.trim()) {
+      toast.error("Vui lòng nhập tin nhắn trước khi gửi", {
+        description: "Không thể gửi tin nhắn rỗng",
+      });
+      return;
+    }
 
-    const newMessage: Message = {
-      id: `msg-${Date.now()}`,
-      senderId: "student",
-      senderName: "Bạn",
-      senderAvatar: "/images/avatars/avt.jpg",
-      content: messageInput,
-      timestamp: new Date(),
-      isRead: false,
-      isMine: true,
-    };
+    try {
+      const newMessage: Message = {
+        id: `msg-${Date.now()}`,
+        senderId: "student",
+        senderName: "Bạn",
+        senderAvatar: "/images/avatars/avt.jpg",
+        content: messageInput,
+        timestamp: new Date(),
+        isRead: false,
+        isMine: true,
+      };
 
-    // Add message to conversation (in real app, this would be an API call)
-    selectedConversation.messages.push(newMessage);
-    setMessageInput("");
+      // Add message to conversation (in real app, this would be an API call)
+      selectedConversation.messages.push(newMessage);
+      setMessageInput("");
 
-    // Force scroll to bottom after sending message
-    setTimeout(() => {
-      if (messagesContainerRef.current) {
-        messagesContainerRef.current.scrollTop =
-          messagesContainerRef.current.scrollHeight;
-      }
-    }, 50);
+      // Show success notification
+      toast.success("Gửi tin nhắn thành công", {
+        description: "Tin nhắn của bạn đã được gửi đi",
+      });
+
+      // Force scroll to bottom after sending message
+      setTimeout(() => {
+        if (messagesContainerRef.current) {
+          messagesContainerRef.current.scrollTop =
+            messagesContainerRef.current.scrollHeight;
+        }
+      }, 50);
+    } catch (error) {
+      // Show error notification
+      toast.error("Gửi tin nhắn thất bại", {
+        description: "Đã xảy ra lỗi khi gửi tin nhắn. Vui lòng thử lại sau.",
+      });
+      console.error("Error sending message:", error);
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {

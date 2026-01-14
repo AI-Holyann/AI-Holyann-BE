@@ -1,0 +1,29 @@
+{
+  "name": "Holyann Explore (HOEX) - Nền Tảng AI Hỗ Trợ Du Học Toàn Diện",
+  "short_name": "HOEX",
+  "description": "Nền tảng AI hỗ trợ du học toàn diện với phân tích hồ sơ SWOT, bài test RIASEC/MBTI/Grit Scale, gợi ý trường DREAM/MATCH/SAFETY, tư vấn trực tiếp với mentor, và cải thiện CV/luận văn.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0f6093",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/images/logos/Logo Holyann nhỏ.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/images/logos/Logo Holyann nhỏ.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["education", "productivity"],
+  "lang": "vi",
+  "dir": "ltr",
+  "scope": "/",
+  "prefer_related_applications": false
+}

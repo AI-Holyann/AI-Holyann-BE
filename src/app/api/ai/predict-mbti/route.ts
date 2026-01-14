@@ -1,8 +1,6 @@
 import {NextRequest, NextResponse} from 'next/server';
 import {prisma} from '@/lib/prisma';
 
-const AI_SERVER_URL = process.env.AI_SERVER_URL || 'http://127.0.0.1:8000';
-
 /**
  * POST /api/ai/predict-mbti
  * Call AI model to predict MBTI and update database
@@ -41,48 +39,38 @@ export async function POST(request: NextRequest) {
             }, {status: 400});
         }
 
-        // Prepare data for AI server
-        // Note: We need to send dummy GRIT and RIASEC data since AI expects all three
-        const aiPayload = {
-            mbti_answers: test.answers,
-            grit_answers: Object.fromEntries(Array.from({length: 12}, (_, i) => [i + 1, 3])),
-            riasec_answers: Object.fromEntries(Array.from({length: 48}, (_, i) => [i + 1, 3])),
-            top_n: 0, // We don't need career recommendations
-            min_match_score: 100 // Set high to skip career matching
-        };
-
-        console.log('📤 [AI Predict MBTI] Calling AI server...');
-
-        // Call AI server
-        const aiResponse = await fetch(`${AI_SERVER_URL}/hoexapp/api/career-assessment/`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(aiPayload)
+        // Convert Prisma.JsonArray to number[]
+        const mbtiAnswersArray: number[] = test.answers.map((val: any) => {
+            const num = Number(val);
+            return isNaN(num) ? 0 : Math.max(-3, Math.min(3, num));
         });
 
-        if (!aiResponse.ok) {
-            const errorText = await aiResponse.text();
-            console.error('❌ [AI Predict MBTI] AI server error:', errorText);
+        console.log('📤 [AI Predict MBTI] Calling MBTI API from server-ai...');
+
+        // Call MBTI API directly (not combined career assessment)
+        const { callMBTIAssessment } = await import('@/lib/ai-api-client');
+        
+        let aiResult;
+        try {
+            aiResult = await callMBTIAssessment(mbtiAnswersArray);
+        } catch (error: any) {
+            console.error('❌ [AI Predict MBTI] AI server error:', error);
             return NextResponse.json({
                 success: false,
-                error: 'AI server error',
-                details: errorText
+                error: 'Không thể kết nối đến server AI. Vui lòng kiểm tra kết nối và thử lại.',
+                details: error.message || 'Unknown error'
             }, {status: 500});
         }
 
-        const aiResult = await aiResponse.json();
-
-        if (!aiResult.success || !aiResult.assessment?.mbti) {
+        if (!aiResult.success || !aiResult.mbti) {
             return NextResponse.json({
                 success: false,
-                error: 'Invalid AI response',
+                error: 'Phản hồi từ server AI không hợp lệ',
                 details: aiResult
             }, {status: 500});
         }
 
-        const mbtiResult = aiResult.assessment.mbti;
+        const mbtiResult = aiResult.mbti;
         
         // Parse dimension scores from AI response
         // AI returns individual trait probabilities (0.0 to 1.0) for each of 8 traits:

@@ -1,6 +1,7 @@
 'use client';
 
 import React, {useState} from 'react';
+import { toast } from 'sonner';
 import {
     TrendingUp, Users, BookOpen, Code, AlertCircle, CheckCircle2,
     Upload, FileText, Sparkles, Target, ArrowRight, Lightbulb,
@@ -100,7 +101,29 @@ export const ProfileEnhancerPage: React.FC = () => {
     const handleCVUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
             const file = e.target.files[0];
+            
+            // Validate file size (5MB max)
+            if (file.size > 5 * 1024 * 1024) {
+                toast.error('File quá lớn', {
+                    description: 'Vui lòng chọn file nhỏ hơn 5MB',
+                });
+                return;
+            }
+            
+            // Validate file type
+            const allowedTypes = ['.pdf', '.doc', '.docx'];
+            const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase();
+            if (!allowedTypes.includes(fileExtension)) {
+                toast.error('Định dạng file không hợp lệ', {
+                    description: 'Vui lòng chọn file PDF, DOC hoặc DOCX',
+                });
+                return;
+            }
+            
             setCvFile(file);
+            toast.info('Đang phân tích CV', {
+                description: 'AI đang phân tích CV của bạn...',
+            });
 
             // Simulate AI analysis
             setTimeout(() => {
@@ -132,15 +155,27 @@ export const ProfileEnhancerPage: React.FC = () => {
                         message: 'Nên bổ sung thêm các từ khóa chuyên ngành như "Data Analysis", "Project Management".'
                     }
                 ]);
+                
+                toast.success('Phân tích CV hoàn tất', {
+                    description: `CV của bạn đạt ${7.5}/10 điểm. Xem chi tiết bên dưới.`,
+                });
             }, 1500);
         }
     };
 
     // Handle Essay Analysis
     const handleEssayAnalysis = () => {
-        if (!essayText.trim()) return;
+        if (!essayText.trim()) {
+            toast.error('Vui lòng nhập nội dung bài luận', {
+                description: 'Bạn cần nhập bài luận trước khi phân tích',
+            });
+            return;
+        }
 
         setIsAnalyzingEssay(true);
+        toast.info('Đang phân tích bài luận', {
+            description: 'AI đang phân tích cấu trúc, cảm xúc và độ đạo văn...',
+        });
 
         // Simulate AI analysis
         setTimeout(() => {
@@ -151,6 +186,10 @@ export const ProfileEnhancerPage: React.FC = () => {
                 suggestion: 'Thử áp dụng kỹ thuật "Show Don\'t Tell" ở đoạn 2. Thay vì nói "Tôi là người có trách nhiệm", hãy kể một câu chuyện cụ thể thể hiện điều đó.'
             });
             setIsAnalyzingEssay(false);
+            
+            toast.success('Phân tích bài luận hoàn tất', {
+                description: 'Đã hoàn tất phân tích. Xem kết quả và gợi ý cải thiện bên dưới.',
+            });
         }, 2000);
     };
 

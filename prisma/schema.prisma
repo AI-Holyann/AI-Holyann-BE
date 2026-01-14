@@ -19,12 +19,12 @@ model academic_awards {
   award_date           DateTime?           @db.Date
   description          String?
   certificate_url      String?
-  category             String?             @db.VarChar(50)
-  year                 Int?
-  rank                 Int?
-  region               String?             @db.VarChar(50)
   created_at           DateTime?           @default(now()) @db.Timestamp(6)
   updated_at           DateTime?           @default(now()) @db.Timestamp(6)
+  category             String?             @db.VarChar(50)
+  rank                 Int?
+  region               String?             @db.VarChar(50)
+  year                 Int?
   student_backgrounds  student_backgrounds @relation(fields: [background_id], references: [student_id], onDelete: Cascade)
 
   @@index([background_id])
@@ -43,10 +43,10 @@ model academic_extracurriculars {
   description         String?
   achievements        String?
   related_to_major    Boolean?            @default(true)
-  scale               Int?
-  region              String?             @db.VarChar(50)
   created_at          DateTime?           @default(now()) @db.Timestamp(6)
   updated_at          DateTime?           @default(now()) @db.Timestamp(6)
+  region              String?             @db.VarChar(50)
+  scale               Int?
   student_backgrounds student_backgrounds @relation(fields: [background_id], references: [student_id], onDelete: Cascade)
 
   @@index([background_id])
@@ -59,6 +59,7 @@ model career_matches {
   match_percentage Float
   reasoning        String?
   created_at       DateTime @default(now()) @db.Timestamp(6)
+  job_field        String?  @map("job-field") @db.VarChar(255)
   students         students @relation(fields: [student_id], references: [user_id], onDelete: Cascade)
 
   @@index([student_id])
@@ -110,11 +111,11 @@ model non_academic_awards {
   award_date           DateTime?           @db.Date
   description          String?
   certificate_url      String?
-  year                 Int?
-  rank                 Int?
-  region               String?             @db.VarChar(50)
   created_at           DateTime?           @default(now()) @db.Timestamp(6)
   updated_at           DateTime?           @default(now()) @db.Timestamp(6)
+  rank                 Int?
+  region               String?             @db.VarChar(50)
+  year                 Int?
   student_backgrounds  student_backgrounds @relation(fields: [background_id], references: [student_id], onDelete: Cascade)
 
   @@index([background_id])
@@ -134,10 +135,10 @@ model non_academic_extracurriculars {
   description         String?
   achievements        String?
   impact              String?
-  scale               Int?
-  region              String?             @db.VarChar(50)
   created_at          DateTime?           @default(now()) @db.Timestamp(6)
   updated_at          DateTime?           @default(now()) @db.Timestamp(6)
+  region              String?             @db.VarChar(50)
+  scale               Int?
   student_backgrounds student_backgrounds @relation(fields: [background_id], references: [student_id], onDelete: Cascade)
 
   @@index([background_id])
@@ -258,7 +259,6 @@ model students {
   current_school            String?                    @db.VarChar(255)
   current_grade             String?                    @db.VarChar(50)
   current_address           String?
-  date_of_birth             DateTime?                  @db.Date
   talents                   String?
   hobbies                   String?
   target_country            String?                    @db.VarChar(100)
@@ -268,6 +268,7 @@ model students {
   created_at                DateTime?                  @default(now()) @db.Timestamp(6)
   updated_at                DateTime?                  @default(now()) @db.Timestamp(6)
   assessments_completed     Boolean?                   @default(false)
+  date_of_birth             DateTime?                  @db.Date
   career_matches            career_matches[]
   grit_tests                grit_tests?
   mbti_tests                mbti_tests?
@@ -295,19 +296,21 @@ model universities {
 }
 
 model users {
-  id                   String                 @id @db.Uuid
-  full_name            String                 @db.VarChar(100)
-  email                String                 @unique @db.VarChar(255)
-  password_hash        String?                @db.VarChar(255)
-  phone_number         String?                @db.VarChar(20)
-  role                 UserRole               @default(STUDENT)
-  auth_provider        String?                @default("LOCAL") @db.VarChar(50)
-  auth_provider_id     String?                @db.VarChar(255)
-  avatar_url           String?
-  is_active            Boolean?               @default(true)
-  created_at           DateTime?              @default(now()) @db.Timestamp(6)
-  student_applications student_applications[]
-  students             students?
+  id                    String                  @id @db.Uuid
+  full_name             String                  @db.VarChar(100)
+  email                 String                  @unique @db.VarChar(255)
+  password_hash         String?                 @db.VarChar(255)
+  phone_number          String?                 @db.VarChar(20)
+  role                  UserRole                @default(STUDENT)
+  auth_provider         String?                 @default("LOCAL") @db.VarChar(50)
+  auth_provider_id      String?                 @db.VarChar(255)
+  avatar_url            String?
+  is_active             Boolean?                @default(true)
+  created_at            DateTime?               @default(now()) @db.Timestamp(6)
+  student_applications  student_applications[]
+  students              students?
+  user_checklist_stages user_checklist_stages[]
+  user_checklist_tasks  user_checklist_tasks[]
 }
 
 model work_experiences {
@@ -372,13 +375,82 @@ model student_skills {
   @@index([student_id])
 }
 
+model checklist_stages {
+  id                    Int                     @id @default(autoincrement())
+  name                  String                  @db.VarChar(100)
+  description           String?
+  order_index           Int                     @unique
+  is_default            Boolean                 @default(true)
+  created_at            DateTime                @default(now()) @db.Timestamp(6)
+  updated_at            DateTime                @default(now()) @db.Timestamp(6)
+  checklist_tasks       checklist_tasks[]
+  user_checklist_stages user_checklist_stages[]
+}
+
+model checklist_tasks {
+  id                    String                 @id @db.Uuid
+  stage_id              Int
+  title                 String                 @db.VarChar(500)
+  description           String?
+  category              String?                @db.VarChar(100)
+  default_deadline_days Int?
+  requires_file         Boolean                @default(false)
+  link_to               String?                @db.VarChar(200)
+  feedback              String?
+  order_index           Int
+  is_active             Boolean                @default(true)
+  created_at            DateTime               @default(now()) @db.Timestamp(6)
+  updated_at            DateTime               @default(now()) @db.Timestamp(6)
+  checklist_stages      checklist_stages       @relation(fields: [stage_id], references: [id], onDelete: Cascade)
+  user_checklist_tasks  user_checklist_tasks[]
+
+  @@index([stage_id])
+}
+
+model user_checklist_stages {
+  id               String           @id @db.Uuid
+  user_id          String           @db.Uuid
+  stage_id         Int
+  is_unlocked      Boolean          @default(false)
+  unlocked_at      DateTime?
+  created_at       DateTime         @default(now()) @db.Timestamp(6)
+  updated_at       DateTime         @default(now()) @db.Timestamp(6)
+  checklist_stages checklist_stages @relation(fields: [stage_id], references: [id], onDelete: Cascade)
+  users            users            @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, stage_id])
+  @@index([user_id])
+}
+
+model user_checklist_tasks {
+  id                 String          @id @db.Uuid
+  user_id            String          @db.Uuid
+  task_id            String          @db.Uuid
+  is_completed       Boolean         @default(false)
+  completed_at       DateTime?
+  custom_deadline    DateTime?       @db.Date
+  uploaded_file_name String?         @db.VarChar(500)
+  uploaded_file_url  String?
+  mentor_feedback    String?
+  notes              String?
+  created_at         DateTime        @default(now()) @db.Timestamp(6)
+  updated_at         DateTime        @default(now()) @db.Timestamp(6)
+  checklist_tasks    checklist_tasks @relation(fields: [task_id], references: [id], onDelete: Cascade)
+  users              users           @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, task_id])
+  @@index([task_id])
+  @@index([user_id])
+}
+
 enum ApplicationStatus {
   RESEARCHING
-  ESSAY_WRITING
+  PREPARING
   SUBMITTED
   ACCEPTED
   REJECTED
   WAITLISTED
+  ENROLLED
 }
 
 enum SchoolCategory {
