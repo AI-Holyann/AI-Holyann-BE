@@ -28,18 +28,20 @@ export default function ProfilePageWrapper() {
       return sessionUserId as string;
     }
 
-    // Try localStorage session (for local auth)
-    try {
-      const localSession = localStorage.getItem("session");
-      if (localSession) {
-        const parsed = JSON.parse(localSession);
-        const localUserId = parsed?.user_id || parsed?.userId || parsed?.id;
-        if (localUserId) {
-          return localUserId;
+    // Try localStorage session (for local auth) - only in browser
+    if (typeof window !== "undefined") {
+      try {
+        const localSession = localStorage.getItem("session");
+        if (localSession) {
+          const parsed = JSON.parse(localSession);
+          const localUserId = parsed?.user_id || parsed?.userId || parsed?.id;
+          if (localUserId) {
+            return localUserId;
+          }
         }
+      } catch (e) {
+        console.warn("Could not parse session from localStorage:", e);
       }
-    } catch (e) {
-      console.warn("Could not parse session from localStorage:", e);
     }
 
     return null;
