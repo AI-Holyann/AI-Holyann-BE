@@ -1,7 +1,8 @@
 'use client';
 
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {useRouter, usePathname} from 'next/navigation';
+import {toast} from 'sonner';
 import {
     GraduationCap, MapPin, Calendar, DollarSign, FileText,
     ChevronDown, ChevronUp, Star, Award, AlertCircle, CheckCircle2,
@@ -27,8 +28,35 @@ interface School {
     isHighlight?: boolean;
 }
 
-// Mock Data
-const SCHOOLS_DATA: School[] = [
+// Transform API data to School format
+const transformMatchToSchool = (match: any): School => {
+    // Map ai_matching to category
+    const categoryMap: Record<string, School['category']> = {
+        'REACH': 'Dream',
+        'MATCH': 'Match',
+        'SAFETY': 'Safety'
+    };
+
+    // Parse deadline from university detail if available
+    let deadlines: DeadlineType[] = [];
+    // Note: We'll need to fetch university detail to get deadlines
+    // For now, we'll use empty array
+
+    return {
+        id: match.university_id,
+        name: match.university_name,
+        rank: match.university_rank ? `#${match.university_rank}` : 'N/A',
+        location: match.university_country || 'N/A',
+        deadlines: deadlines,
+        requirements: 'Thông tin sẽ được cập nhật',
+        category: categoryMap[match.ai_matching] || 'Match',
+        status: 'Đang tìm hiểu',
+        isHighlight: match.match_score && parseFloat(match.match_score.toString()) > 80
+    };
+};
+
+// Mock Data (fallback)
+const MOCK_SCHOOLS_DATA: School[] = [
     // DREAM SCHOOLS
     {
         id: 'd1',
@@ -255,9 +283,9 @@ const getCategoryConfig = (category: School['category']) => {
 };
 
 // School Category Section Component
-const SchoolCategorySection: React.FC<{ category: School['category'] }> = ({category}) => {
+const SchoolCategorySection: React.FC<{ category: School['category']; schools: School[] }> = ({category, schools: propSchools}) => {
     const [isExpanded, setIsExpanded] = useState(true);
-    const schools = SCHOOLS_DATA.filter(s => s.category === category);
+    const schools = propSchools.filter(s => s.category === category);
     const config = getCategoryConfig(category);
     const IconComponent = config.icon;
 
@@ -319,7 +347,8 @@ const SchoolCategorySection: React.FC<{ category: School['category'] }> = ({cate
                         {schools.map((school) => (
                             <tr
                                 key={school.id}
-                                className={`hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors ${school.isHighlight ? 'bg-green-50/50 dark:bg-green-900/20' : ''}`}
+                                onClick={() => router.push(`/dashboard/universities/${school.id}`)}
+                                className={`hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors cursor-pointer ${school.isHighlight ? 'bg-green-50/50 dark:bg-green-900/20' : ''}`}
                             >
                                 {/* School Info */}
                                 <td className="px-6 py-4">
@@ -414,11 +443,86 @@ const SchoolCategorySection: React.FC<{ category: School['category'] }> = ({cate
 export const TargetSchoolsPage: React.FC = () => {
     const router = useRouter();
     const pathname = usePathname();
+    const [schools, setSchools] = useState<School[]>([]);
+    const [loading, setLoading] = useState(true);
 
-    const dreamCount = SCHOOLS_DATA.filter(s => s.category === 'Dream').length;
-    const matchCount = SCHOOLS_DATA.filter(s => s.category === 'Match').length;
-    const safetyCount = SCHOOLS_DATA.filter(s => s.category === 'Safety').length;
-    const totalCount = SCHOOLS_DATA.length;
+    useEffect(() => {
+        fetchMatchingSchools();
+    }, []);
+
+    const fetchMatchingSchools = async () => {
+        try {
+            setLoading(true);
+            const response = await fetch('/api/student-match-school');
+            const result = await response.json();
+
+            if (!result.success) {
+                throw new Error(result.error || 'Failed to fetch matching schools');
+            }
+
+            // Transform API data to School format
+            const transformedSchools = result.data.map(transformMatchToSchool);
+            
+            // Fetch university details for deadlines
+            const schoolsWithDeadlines = await Promise.all(
+                transformedSchools.map(async (school) => {
+                    try {
+                        const uniResponse = await fetch(`/api/universities/${school.id}`);
+                        const uniResult = await uniResponse.json();
+                        
+                        if (uniResult.success && uniResult.data) {
+                            const deadline = uniResult.data.deadline;
+                            const deadlines: DeadlineType[] = [];
+                            
+                            if (deadline) {
+                                if (deadline.ED) deadlines.push({type: 'ED', date: formatDate(deadline.ED)});
+                                if (deadline.EA) deadlines.push({type: 'EA', date: formatDate(deadline.EA)});
+                                if (deadline.RD) deadlines.push({type: 'RD', date: formatDate(deadline.RD)});
+                            }
+                            
+                            return {
+                                ...school,
+                                deadlines,
+                                requirements: uniResult.data.requirements || school.requirements
+                            };
+                        }
+                    } catch (e) {
+                        console.warn(`Failed to fetch details for ${school.id}:`, e);
+                    }
+                    return school;
+                })
+            );
+
+            setSchools(schoolsWithDeadlines);
+        } catch (error: any) {
+            console.error('Error fetching matching schools:', error);
+            toast.error('Không thể tải danh sách trường phù hợp', {
+                description: error.message
+            });
+            // Fallback to empty array
+            setSchools([]);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const formatDate = (dateString: string) => {
+        try {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('vi-VN', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            });
+        } catch {
+            return dateString;
+        }
+    };
+
+    const dreamCount = schools.filter(s => s.category === 'Dream').length;
+    const matchCount = schools.filter(s => s.category === 'Match').length;
+    const safetyCount = schools.filter(s => s.category === 'Safety').length;
+    const totalCount = schools.length;
 
     // Navigation items
     const navigationItems = [
@@ -545,12 +649,29 @@ export const TargetSchoolsPage: React.FC = () => {
                     </div>
                 </div>
 
-                {/* School Categories */}
-                <div className="space-y-6">
-                    <SchoolCategorySection category="Dream"/>
-                    <SchoolCategorySection category="Match"/>
-                    <SchoolCategorySection category="Safety"/>
-                </div>
+                {/* Loading State */}
+                {loading ? (
+                    <div className="flex items-center justify-center py-20">
+                        <div className="w-12 h-12 border-4 border-indigo-200 dark:border-indigo-800 border-t-indigo-600 dark:border-t-indigo-400 rounded-full animate-spin"></div>
+                    </div>
+                ) : totalCount === 0 ? (
+                    <div className="text-center py-20 bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700">
+                        <GraduationCap className="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+                        <p className="text-gray-500 dark:text-gray-400 text-lg mb-2">
+                            Chưa có trường đại học phù hợp
+                        </p>
+                        <p className="text-sm text-gray-400 dark:text-gray-500">
+                            Hoàn thành các bài test để nhận đề xuất trường phù hợp
+                        </p>
+                    </div>
+                ) : (
+                    /* School Categories */
+                    <div className="space-y-6">
+                        <SchoolCategorySection category="Dream" schools={schools}/>
+                        <SchoolCategorySection category="Match" schools={schools}/>
+                        <SchoolCategorySection category="Safety" schools={schools}/>
+                    </div>
+                )}
 
                 {/* Footer Note */}
                 <div className="mt-8 text-center">
