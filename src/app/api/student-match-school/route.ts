@@ -29,12 +29,30 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Get student_id from students table (student_id = user_id in students table)
+    const student = await prisma.students.findUnique({
+      where: { user_id: userId },
+      select: { user_id: true },
+    });
+
+    if (!student) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Student profile not found",
+        },
+        { status: 404 }
+      );
+    }
+
+    const studentId = student.user_id; // student_id = user_id in students table
+
     const searchParams = request.nextUrl.searchParams;
     const ai_matching = searchParams.get("ai_matching"); // Filter by REACH, MATCH, SAFETY
 
     // Build where clause
     const where: any = {
-      student_id: userId,
+      student_id: studentId,
     };
     if (ai_matching) {
       where.ai_matching = ai_matching.toUpperCase();
