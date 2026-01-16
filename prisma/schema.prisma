@@ -215,16 +215,17 @@ model student_academic_profiles {
 model student_applications {
   id             String            @id @db.Uuid
   user_id        String?           @db.Uuid
-  university_id  Int?
+  university_id  String?           @db.Uuid
   category       SchoolCategory    @default(MATCH)
   status         ApplicationStatus @default(RESEARCHING)
   personal_notes String?
   created_at     DateTime?         @default(now()) @db.Timestamp(6)
   updated_at     DateTime?         @default(now()) @db.Timestamp(6)
-  universities   universities?     @relation(fields: [university_id], references: [id], onDelete: Cascade)
+  university     university?       @relation(fields: [university_id], references: [id], onDelete: Cascade)
   users          users?            @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   @@unique([user_id, university_id])
+  @@index([university_id])
 }
 
 model student_backgrounds {
@@ -278,21 +279,79 @@ model students {
   student_backgrounds       student_backgrounds?
   student_parents           student_parents[]
   student_skills            student_skills[]
+  student_match_school      student_match_school[]
   users                     users                      @relation(fields: [user_id], references: [id], onDelete: Cascade)
 }
 
-model universities {
-  id                   Int                    @id @default(autoincrement())
-  name                 String                 @db.VarChar(255)
-  country              String?                @db.VarChar(100)
-  state                String?                @db.VarChar(100)
-  current_ranking      Int?
-  website_url          String?
-  logo_url             String?
-  ai_matching_data     Json?                  @default("{}")
-  essay_requirements   String?
-  scholarship_info     Json?                  @default("{}")
+model university {
+  id                String              @id @default(uuid()) @db.Uuid
+  name              String              @db.VarChar(255)
+  country           String?             @db.VarChar(100)
+  description       String?             @db.Text
+  detail_information String?            @map("detail_information") @db.Text
+  deadline          Json?               @db.JsonB
+  requirements      String?             @db.Text
+  status            String?             @db.VarChar(50)
+  rank              Int?
+  url_link          String?             @map("url_link") @db.VarChar(500)
+  image_display_url String?             @map("image_display_url") @db.VarChar(500)
+  created_at        DateTime?           @default(now()) @db.Timestamp(6)
+  updated_at        DateTime?           @default(now()) @updatedAt @db.Timestamp(6)
+  scholarships      scholarship[]
+  faculties         faculty[]
   student_applications student_applications[]
+  student_match_school student_match_school[]
+
+  @@map("university")
+}
+
+model student_match_school {
+  id            String     @id @default(uuid()) @db.Uuid
+  student_id    String     @map("student_id") @db.Uuid
+  university_id String    @map("university_id") @db.Uuid
+  ai_matching   String     @map("ai_matching") @db.VarChar(50)
+  match_score  Decimal?   @map("match_score") @db.Decimal(5, 2)
+  match_reason String?    @map("match_reason") @db.Text
+  created_at   DateTime?  @default(now()) @map("created_at") @db.Timestamp(6)
+  updated_at   DateTime?  @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+  students     students   @relation(fields: [student_id], references: [user_id], onDelete: Cascade)
+  university   university  @relation(fields: [university_id], references: [id], onDelete: Cascade)
+
+  @@unique([student_id, university_id])
+  @@index([student_id])
+  @@index([university_id])
+  @@index([ai_matching])
+  @@map("student_match_school")
+}
+
+model scholarship {
+  id            String     @id @default(uuid()) @db.Uuid
+  universities_id String   @map("universities_id") @db.Uuid
+  name          String     @db.VarChar(255)
+  description   String?    @db.Text
+  deadline      DateTime?  @db.Timestamp(6)
+  url_web       String?    @map("url_web") @db.VarChar(500)
+  created_at    DateTime? @default(now()) @db.Timestamp(6)
+  updated_at    DateTime? @default(now()) @updatedAt @db.Timestamp(6)
+  university    university @relation(fields: [universities_id], references: [id], onDelete: Cascade)
+
+  @@index([universities_id])
+  @@map("scholarship")
+}
+
+model faculty {
+  id          String     @id @default(uuid()) @db.Uuid
+  university_id String   @map("university_id") @db.Uuid
+  name        String     @db.VarChar(255)
+  description String?    @db.Text
+  type        String?    @db.VarChar(100)
+  url_web     String?    @map("url_web") @db.VarChar(500)
+  created_at  DateTime?  @default(now()) @db.Timestamp(6)
+  updated_at  DateTime? @default(now()) @updatedAt @db.Timestamp(6)
+  university university  @relation(fields: [university_id], references: [id], onDelete: Cascade)
+
+  @@index([university_id])
+  @@map("faculty")
 }
 
 model users {
